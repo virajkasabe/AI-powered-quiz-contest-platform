@@ -5,7 +5,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 
 import adminRoutes from "./routes/adminRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
+import quizRoutes from "./routes/quizRoutes.js";
 import leaderboardRoutes from "./routes/leaderboradRoutes.js";
 
 // Connect Database
@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/admin", adminRoutes);
-app.use("/api/user", userRoutes);
+app.use("/api/quiz", quizRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 
 // Future Routes Here
