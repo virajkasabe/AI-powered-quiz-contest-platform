@@ -1,7 +1,10 @@
 import express from "express";
 import multer from "multer";
-import uploadInterns from "../controllers/adminController.js";
-import { createContest } from "../controllers/adminController.js";
+import {
+  generateQuiz,
+  createContest,
+  uploadInterns,
+} from "../controllers/admin.controllers.js";
 
 const router = express.Router();
 
@@ -10,11 +13,28 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post('/upload-interns', upload.single('file'),  uploadInterns);
-router.post('/create-contest', createContest)
-import { generateQuiz } from "../controllers/admin.controllers.js";
-
-const router = express.Router();
+// Custom middleware to handle multer errors gracefully
+router.post(
+  "/upload-interns",
+  (req, res, next) => {
+    const uploadSingle = upload.single("file");
+    
+    uploadSingle(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        // This catches "Field name missing" and sends a nice JSON response!
+        return res.status(400).json({ 
+          success: false,
+          message: `Upload Error: ${err.message}. Please make sure you are using "file" as the key in your form-data.` 
+        });
+      } else if (err) {
+        return res.status(500).json({ success: false, message: "Unknown upload error occurred." });
+      }
+      next(); // Move to the next function (uploadInterns) if no errors
+    });
+  },
+  uploadInterns
+);
+router.post("/create-contest", createContest);
 
 router.get("/generate-quiz", generateQuiz);
 
