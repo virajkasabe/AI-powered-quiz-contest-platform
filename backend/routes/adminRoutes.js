@@ -12,5 +12,10 @@ const upload = multer({ storage });
 
 router.post('/upload-interns', upload.single('file'),  uploadInterns);
 router.post('/create-contest', createContest)
+import { generateQuiz } from "../controllers/admin.controllers.js";
+
+const router = express.Router();
+
+router.get("/generate-quiz", generateQuiz);
 
 export default router;
