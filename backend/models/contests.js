@@ -20,3 +20,8 @@ const contestSchema = new mongoose.Schema({
     type: Number,
      default: 20 } 
 });
+
+
+const Contest = mongoose.model('Contest', contestSchema)
+
+export default Contest;
