@@ -1,0 +1,13 @@
+import jwt from "jsonwebtoken";
+import "dotenv/config";
+
+export const genreteToken = (userId, res) => {
+  const token = jwt.sign({ userId }, process.env.SECRET_KEY, {
+    expiresIn: "7d",
+  });
+  res.cookie("jwt", token, {
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+  });
+  return token;
+};

@@ -7,6 +7,7 @@ import authRouter from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import leaderboardRoutes from "./routes/leaderboradRoutes.js";
+import cookieParser from "cookie-parser";
 
 // Connect Database
 connectDB();
@@ -16,6 +17,7 @@ const app = express();
 // Init Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRoutes);

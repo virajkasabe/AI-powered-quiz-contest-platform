@@ -1,42 +1,43 @@
 import "dotenv/config";
 import Intern from "../models/intern.js";
-import jwt from "jsonwebtoken";
+import { genreteToken } from "../utils/JWT.js";
 
 export const login = async (req, res) => {
   try {
     const { uniqueId, joiningDate } = req.body;
 
+    if (!uniqueId || !joiningDate)
+      return res.status(400).json({ message: "Enter your credentials" });
     //  Find user
     const user = await Intern.findOne({ uniqueId });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ massage: "invalid credintionls" });
 
-    //  Check joining date
-
-    // Convert DB date → YYYY-MM-DD
     const dbDate = new Date(user.joiningDate).toISOString().split("T")[0];
 
-    if (dbDate !== joiningDate) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (dbDate !== joiningDate)
+      return res.status(404).json({ massage: "invalid credintionls" });
 
     //  Generate token
-    const token = jwt.sign(
-      { id: user._id, domain: user.domain },
-      process.env.SECRET_KEY,
-      { expiresIn: "1d" },
-    );
+    genreteToken(user._id, res);
+    res.status(201).json({
+      id: user.uniqueId,
+      userName: user.name,
+      email: user.email,
+      domain: user.domain,
+      status: user.status,
+      badgesEarned: user.badgesEarned,
+    });
 
     // Send response
-    res.json({
-      message: "Login successful",
-      token,
-      user,
-    });
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: "Server error during login" });
+    console.error("error in controller", error);
+    res.status(501).json({
+      massage: "internal sever error",
+    });
   }
+};
+export const logout = (req, res) => {
+  res.cookie("jwt", "", { maxAge: 0 });
+  res.status(200).json({ massage: "you are logout" });
 };
