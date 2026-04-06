@@ -1,6 +1,6 @@
 import express from "express";
 import { login } from "../controllers/authController.js";
-import authMiddleware from "../midlleware/authMiddleware.js";
+import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/login", login);
 
 //  Protected Route (example)
-router.get("/dashboard", authMiddleware, (req, res) => {
+router.get("/dashboard", protectRoute, (req, res) => {
   res.json({
     message: "Welcome to dashboard",
     user: req.user,

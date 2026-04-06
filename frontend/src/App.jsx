@@ -1,16 +1,22 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import './App.css';
+import Leaderboard from './pages/Leaderboard';
+
+import InternDashboard from './pages/InternDashboard';
+
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
-    <Router>
-      <div className="app-container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </div>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <div className="app-container">
+          <Routes>
+            <Route path="/" element={<Leaderboard />} />
+            <Route path="/intern" element={<InternDashboard />} />
+          </Routes>
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 
