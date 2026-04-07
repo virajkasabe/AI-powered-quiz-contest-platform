@@ -1,7 +1,9 @@
 import "dotenv/config";
 import Intern from "../models/intern.js";
-import { genreteToken } from "../utils/JWT.js";
+import Admin from "../models/admin.js";
+import { generateToken } from "../utils/JWT.js";
 
+// 🔐 Intern Login
 export const login = async (req, res) => {
   try {
     const { uniqueId, joiningDate } = req.body;
@@ -24,8 +26,8 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 🔥 FIXED
-    const token = genreteToken(user._id, res);
+    // ✅ Generate token
+    const token = generateToken(user._id, res);
 
     return res.status(200).json({
       success: true,
@@ -43,7 +45,7 @@ export const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("error in controller", error);
+    console.error("Error in login controller:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -51,6 +53,41 @@ export const login = async (req, res) => {
   }
 };
 
+// 🔐 Admin Login
+export const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Please provide email and password",
+      });
+    }
+
+    const admin = await Admin.findOne({ email });
+
+    if (!admin || !(await admin.comparePassword(password))) {
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
+    }
+
+    const token = generateToken(admin._id, res);
+
+    res.status(200).json({
+      token,
+      id: admin._id,
+      email: admin.email,
+      role: admin.role,
+    });
+
+  } catch (error) {
+    console.error("Error in adminLogin:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// 🔓 Logout
 export const logout = (req, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
 
