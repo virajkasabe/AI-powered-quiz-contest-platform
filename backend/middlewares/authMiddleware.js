@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import Intern from "../models/intern.js";
+import Admin from "../models/admin.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
@@ -12,16 +13,22 @@ export const protectRoute = async (req, res, next) => {
         .json({ message: "Unauthorized: No token provided" });
     }
 
-    // jwt.verify throws an error if invalid, so we wrap it or handle it in catch
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
     if (!decoded) {
       return res.status(401).json({ message: "Unauthorized: Invalid token" });
     }
 
-    const user = await Intern.findById(decoded.userId).select("-joiningDate");
+    // Try to find in Intern model first
+    let user = await Intern.findById(decoded.userId).select("-joiningDate");
+    
+    // If not found in Intern, try Admin model
+    if (!user) {
+      user = await Admin.findById(decoded.userId).select("-password");
+    }
 
-    if (!user) return res.status(404).json({ message: "user not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
     // Attach user to the request object
     req.user = user;
 
@@ -29,7 +36,6 @@ export const protectRoute = async (req, res, next) => {
   } catch (error) {
     console.error("Error in protectRoute middleware:", error.message);
 
-    // Differentiate between JWT errors and Server errors
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({ message: "Unauthorized: Invalid token" });
     }
