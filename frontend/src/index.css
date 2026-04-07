@@ -1,1 +1,21 @@
+<<<<<<< HEAD
 @import "tailwindcss";
+=======
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #0ea5e9;
+  --color-primary-hover: #0284c7;
+  --color-sidebar-bg: #0ea5e9;
+  --color-body-bg: #f8fafc;
+}
+
+body {
+  background-color: var(--color-body-bg);
+  color: #1e293b;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+>>>>>>> 2bd4b160f1bb4f94efd7f621f13076340e6201d0
