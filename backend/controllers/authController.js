@@ -6,38 +6,55 @@ export const login = async (req, res) => {
   try {
     const { uniqueId, joiningDate } = req.body;
 
-    if (!uniqueId || !joiningDate)
+    if (!uniqueId || !joiningDate) {
       return res.status(400).json({ message: "Enter your credentials" });
-    //  Find user
+    }
+
     const user = await Intern.findOne({ uniqueId });
 
-    if (!user) return res.status(404).json({ massage: "invalid credintionls" });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    const dbDate = new Date(user.joiningDate).toISOString().split("T")[0];
+    const dbDate = new Date(user.joiningDate)
+      .toISOString()
+      .split("T")[0];
 
-    if (dbDate !== joiningDate)
-      return res.status(404).json({ massage: "invalid credintionls" });
+    if (dbDate !== joiningDate) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    //  Generate token
-    genreteToken(user._id, res);
-    res.status(201).json({
-      id: user.uniqueId,
-      userName: user.name,
-      email: user.email,
-      domain: user.domain,
-      status: user.status,
-      badgesEarned: user.badgesEarned,
+    // 🔥 FIXED
+    const token = genreteToken(user._id, res);
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user.uniqueId,
+        userName: user.name,
+        email: user.email,
+        domain: user.domain,
+        status: user.status,
+        badgesEarned: user.badgesEarned,
+        role: "intern",
+      },
     });
 
-    // Send response
   } catch (error) {
     console.error("error in controller", error);
-    res.status(501).json({
-      massage: "internal sever error",
+
+    return res.status(500).json({
+      message: "Internal server error",
     });
   }
 };
+
 export const logout = (req, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
-  res.status(200).json({ massage: "you are logout" });
+
+  res.status(200).json({
+    message: "You are logged out",
+  });
 };

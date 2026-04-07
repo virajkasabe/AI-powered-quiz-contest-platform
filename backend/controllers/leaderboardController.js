@@ -31,21 +31,16 @@ export const getDomainLeaderboard = async (req, res) => {
   try {
     const { domain } = req.params;
 
-    if (!domain) {
-      return res.status(400).json({
-        success: false,
-        message: "Domain is required",
-      });
-    }
+    console.log("Searching domain:", domain);
 
-    // Case-insensitive matching for the domain
-    // This allows "web" to match "Web Development"
     const topInterns = await Intern.find({
-      domain: { $regex: new RegExp(domain, "i") },
+      domain: { $regex: domain, $options: "i" },
     })
       .sort({ badgesEarned: -1 })
       .limit(10)
       .select("name uniqueId domain badgesEarned");
+
+  
 
     res.status(200).json({
       success: true,

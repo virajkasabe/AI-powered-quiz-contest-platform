@@ -1,7 +1,6 @@
-<<<<<<< HEAD
+
 @import "tailwindcss";
-=======
-@import "tailwindcss";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,4 +17,4 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
->>>>>>> 2bd4b160f1bb4f94efd7f621f13076340e6201d0
+
