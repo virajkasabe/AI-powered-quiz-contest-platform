@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRoutes);
 app.use("/api/quiz", quizRoutes);
-app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api", leaderboardRoutes);
 
 // Future Routes Here
 // app.use('/api/users', require('./routes/users'));

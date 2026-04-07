@@ -1,7 +1,9 @@
 import * as Groq_questions from "../utils/groq_Questions.js";
+import mongoose from "mongoose";
 import Question from "../models/question.js";
 import Intern from "../models/intern.js";
 import Contest from "../models/contests.js";
+import Result from "../models/result.js";
 import xlsx from "xlsx";
 import "dotenv/config";
 
@@ -103,40 +105,41 @@ export const uploadInterns = async (req, res) => {
     res.status(500).json({ message: "❌ Server error.", error: error.message });
   }
 };
-
 export const createContest = async (req, res) => {
   try {
     let { date, domains, startTime, endTime } = req.body;
 
-    // Validate required fields
+    // ✅ Validate
     if (!date || !domains || !startTime || !endTime) {
       return res.status(400).json({ message: "❌ All fields are required." });
     }
 
-    // 🔥 Convert to string
+    // ✅ Ensure domains is ARRAY (IMPORTANT)
+    if (!Array.isArray(domains)) {
+      domains = [domains]; // convert single value to array
+    }
+
+    // 🧠 Clean domains (remove spaces, lowercase)
+    domains = domains.map(d => d.trim().toLowerCase());
+
+    // 🔥 Date handling
     const datePart = new Date(date).toISOString().split("T")[0];
 
     const startDateTime = new Date(`${datePart}T${startTime}:00`);
     const endDateTime = new Date(`${datePart}T${endTime}:00`);
 
-    // If domains is array → convert to string
-    if (Array.isArray(domains)) {
-      domains = domains.join(","); // "web,ai,app"
-    } else {
-      domains = String(domains);
-    }
-
-    // Check if contest already exists
-    const existing = await Contest.findOne({ date });
+    // ✅ Check existing contest
+    const existing = await Contest.findOne({ date: new Date(date) });
     if (existing) {
       return res
         .status(400)
         .json({ message: "❌ Contest already exists for this date." });
     }
 
+    // ✅ Save PROPER STRUCTURE
     const contest = await Contest.create({
       date: new Date(date),
-      domains,
+      domains, // ✅ ARRAY STORE (FIXED)
       startTime: startDateTime,
       endTime: endDateTime,
     });
@@ -146,6 +149,115 @@ export const createContest = async (req, res) => {
       contest,
     });
   } catch (error) {
-    res.status(500).json({ message: "❌ Server error.", error: error.message });
+    res.status(500).json({
+      message: "❌ Server error.",
+      error: error.message,
+    });
+  }
+};
+
+export const submitQuiz = async (req, res) => {
+  try {
+    const { internId, contestId, domain, answers } = req.body;
+
+    let score = 0;
+
+    // Get all questions
+    const questionIds = answers.map((a) => a.questionId);
+    const questions = await Question.find({ _id: { $in: questionIds } });
+
+    const questionMap = {};
+    questions.forEach((q) => {
+      questionMap[q._id] = q;
+    });
+
+    // Calculate score
+    const evaluatedAnswers = answers.map((a) => {
+      const question = questionMap[a.questionId];
+      const isCorrect = question.correctAnswer === a.selectedAnswer;
+
+      if (isCorrect) score++;
+
+      return {
+        ...a,
+        isCorrect,
+      };
+    });
+
+    // Save result
+    const result = await Result.create({
+      internId,
+      contestId,
+      domain,
+      score,
+      totalQuestions: questions.length,
+      timeTaken: req.body.timeTaken,
+      answers: evaluatedAnswers,
+    });
+
+    res.json({
+      success: true,
+      score,
+      total: questions.length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    const { domain, contestId } = req.query;
+
+    // ✅ Build filter safely
+    let filter = {};
+
+    if (domain) {
+      filter.domain = domain.trim();
+    }
+
+    if (contestId) {
+      // 🔥 HANDLE BOTH CASES (String + ObjectId)
+      filter.$or = [
+        { contestId: contestId }, // if stored as string
+        ...(mongoose.Types.ObjectId.isValid(contestId)
+          ? [{ contestId: new mongoose.Types.ObjectId(contestId) }]
+          : []),
+      ];
+    }
+
+    // ✅ Fetch data
+    const leaderboard = await Result.find(filter)
+      .populate("internId", "name email")
+      .sort({ score: -1, timeTaken: 1 });
+
+    // ❗ DEBUG (IMPORTANT - REMOVE LATER)
+    console.log("FILTER:", filter);
+    console.log("RESULT:", leaderboard);
+
+    // ✅ Add rank
+    const ranked = leaderboard.map((item, index) => ({
+      rank: index + 1,
+      name: item.internId?.name || "Unknown",
+      email: item.internId?.email || "No Email",
+      score: item.score,
+      timeTaken: item.timeTaken,
+    }));
+
+    return res.json({
+      success: true,
+      count: ranked.length,
+      data: ranked,
+    });
+  } catch (error) {
+    console.error("Leaderboard Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
