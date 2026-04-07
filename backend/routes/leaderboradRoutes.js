@@ -3,9 +3,10 @@ import {
   getOverallLeaderboard,
   getDomainLeaderboard,
 } from "../controllers/leaderboardController.js";
+import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
-
+router.use(protectRoute);
 // @route   GET /api/leaderboard/overall
 router.get("/overall", getOverallLeaderboard);
 

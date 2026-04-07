@@ -1,11 +1,13 @@
 import express from "express";
-import { login } from "../controllers/authController.js";
+import { login, adminLogin, logout } from "../controllers/authController.js";
 import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-//  Public Route (Login)
+//  Public Routes
 router.post("/login", login);
+router.post("/admin-login", adminLogin);
+router.post("/logout", logout);
 
 //  Protected Route (example)
 router.get("/dashboard", protectRoute, (req, res) => {
