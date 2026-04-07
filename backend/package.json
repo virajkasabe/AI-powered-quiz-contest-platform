@@ -15,9 +15,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
+    "groq-sdk": "^1.1.2",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.3",
     "multer": "^2.1.1",
-    "xlsx": "^0.18.5",
-    "groq-sdk": "^1.1.2"
+    "xlsx": "^0.18.5"
   }
 }
