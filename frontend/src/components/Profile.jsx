@@ -17,24 +17,26 @@ const ProfilePage = () => {
         fetch("http://localhost:5000/api/overall")
             .then((res) => res.json())
             .then((data) => {
-                const count = data.data.filter(
-                    (item) => item.domain === storedUser.domain
-                ).length;
-
-                setDomainCount(count);
-            });
+                if (data && Array.isArray(data.data)) {
+                    const count = data.data.filter(
+                        (item) => item.domain === storedUser.domain
+                    ).length;
+                    setDomainCount(count);
+                }
+            })
+            .catch(err => console.error("Error fetching leaderboard data:", err));
     }, []);
 
     if (!user) {
         return (
-            <div className="h-screen flex items-center justify-center text-xl text-white bg-black">
+            <div className="h-screen flex items-center justify-center text-xl text-white bg-black font-sans">
                 Loading...
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6 font-sans">
             {/* Logo */}
             <div className="text-3xl font-bold text-center mb-8 tracking-wider">
                 <span className="text-blue-500">Athenura</span>
@@ -83,7 +85,7 @@ const ProfilePage = () => {
                         <motion.div
                             key={i}
                             whileHover={{ scale: 1.05 }}
-                            className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-center"
+                            className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-center shadow-inner"
                         >
                             <p className="text-gray-400 text-sm">{item.label}</p>
                             <p className="text-xl font-semibold">{item.value}</p>
@@ -101,7 +103,7 @@ const ProfilePage = () => {
                                 <motion.div
                                     key={index}
                                     whileHover={{ scale: 1.05 }}
-                                    className="bg-gray-800 p-4 rounded-xl text-center border border-gray-700"
+                                    className="bg-gray-800 p-4 rounded-xl text-center border border-gray-700 shadow-inner"
                                 >
                                     <div className="text-2xl">🏆</div>
                                     <p className="mt-2">{badge}</p>
