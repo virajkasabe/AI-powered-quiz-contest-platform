@@ -42,8 +42,8 @@ const InternDashboard = () => {
             {/* Overall Ranking Card */}
             <div 
               onClick={handleShowOverall}
-              className={`bg-white dark:bg-slate-900 rounded-2xl border ${activeTableConfig?.tab === 'overall' ? 'border-sky-500 shadow-md ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:-translate-y-1 dark:hover:border-slate-700'} p-8 relative overflow-hidden transition-all cursor-pointer group`}>
-              <div className="absolute -right-10 -top-10 w-32 h-32 bg-sky-50 dark:bg-sky-900/10 rounded-full group-hover:scale-110 transition-transform blur-2xl"></div>
+              className={`bg-white rounded-3xl border border-sky-100/50 shadow-sm ${activeTableConfig?.tab === 'overall' ? 'border-sky-500 ring-2 ring-sky-500/30 shadow-xl' : 'hover:shadow-lg hover:-translate-y-1 hover:border-sky-200'} p-8 relative overflow-hidden transition-all cursor-pointer group`}>
+              <div className="absolute -right-10 -top-10 w-32 h-32 bg-sky-50/80 rounded-full group-hover:scale-110 transition-transform blur-2xl"></div>
               <div className="flex justify-between items-start mb-6 align-top">
                 <div className="w-14 h-14 xl:w-14 xl:h-14 lg:w-10 lg:h-10 rounded-2xl bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 flex justify-center items-center">
                   <svg className="w-7 h-7 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -71,8 +71,8 @@ const InternDashboard = () => {
             {/* Domain Ranking Card */}
             <div 
               onClick={handleShowDomain}
-              className={`bg-white dark:bg-slate-900 rounded-2xl border ${activeTableConfig?.tab === 'domain' ? 'border-sky-500 shadow-md ring-2 ring-sky-500/20' : 'border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:-translate-y-1 dark:hover:border-slate-700'} p-8 relative overflow-hidden transition-all cursor-pointer group`}>
-              <div className="absolute -right-10 -top-10 w-32 h-32 bg-sky-50 dark:bg-sky-900/10 rounded-full group-hover:scale-110 transition-transform blur-2xl"></div>
+              className={`bg-white rounded-3xl border border-sky-100/50 shadow-sm ${activeTableConfig?.tab === 'domain' ? 'border-sky-500 ring-2 ring-sky-500/30 shadow-xl' : 'hover:shadow-lg hover:-translate-y-1 hover:border-sky-200'} p-8 relative overflow-hidden transition-all cursor-pointer group`}>
+              <div className="absolute -right-10 -top-10 w-32 h-32 bg-sky-50/80 rounded-full group-hover:scale-110 transition-transform blur-2xl"></div>
                <div className="flex justify-between items-start mb-6 align-top">
                 <div className="w-14 h-14 xl:w-14 xl:h-14 lg:w-10 lg:h-10 rounded-2xl bg-sky-50 dark:bg-sky-900/20 text-sky-500 dark:text-sky-400 border border-sky-100 dark:border-sky-800/30 flex justify-center items-center">
                   <svg className="w-7 h-7 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
@@ -105,9 +105,9 @@ const InternDashboard = () => {
             </div>
           ) : (
             <>
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-8 flex items-center justify-between">
+              <div className="bg-white rounded-3xl border border-sky-100/50 shadow-sm p-8 flex items-center justify-between">
                    <div>
-                      <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Your Score</p>
+                      <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Your Score</p>
                       <p className="text-3xl font-black text-slate-700 dark:text-slate-100">{CURRENT_INTERN.score} <span className="text-lg font-medium text-slate-400">pts</span></p>
                    </div>
                    <div className="h-16 w-px bg-slate-100 dark:bg-slate-800"></div>

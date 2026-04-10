@@ -1,4 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const ShieldIcon = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -72,23 +74,46 @@ const Toast = ({ message, type }) => {
 
 // ─── Props: onLogin (called after intern login), onAdminClick (go to admin page)
 export default function LoginPage({ onLogin, onAdminClick }) {
+  const navigate = useNavigate();
   const [internId, setInternId]     = useState("");
   const [internDate, setInternDate] = useState("");
   const [toast, setToast]           = useState({ msg: "", type: "" });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!internId.trim()) {
       setToast({ msg: "Please enter your Unique ID.", type: "err" }); return;
     }
-    if (!/^ATHENURA\/\d{2}\/\d+$/i.test(internId.trim())) {
+    const idRegex = /^ATHENURA\/\d{2}\/\d+$/i;
+    if (!idRegex.test(internId.trim())) {
       setToast({ msg: "Format must be ATHENURA/YY/XXXXX", type: "err" }); return;
     }
     if (!internDate) {
       setToast({ msg: "Please select your joining date.", type: "err" }); return;
     }
-    setToast({ msg: "Verified — loading your domain quiz...", type: "ok" });
-    setTimeout(() => onLogin && onLogin(), 800);
-    // TODO: replace with real API → await fetch('/api/intern/login', ...)
+
+    setToast({ msg: "Logging in...", type: "ok" });
+
+    // Mock role-based response (replace with real API)
+    const mockUser = {
+      userName: internId,
+      domain: 'Frontend', // or based on ID
+      role: 'intern'
+    };
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('token', 'mock-intern-token');
+
+    setTimeout(() => {
+      setToast({ msg: "Welcome back! Redirecting...", type: "ok" });
+      // Role-based redirect
+      const role = mockUser.role;
+      if (role === 'intern' || role === 'student') {
+        navigate('/intern');
+      } else if (role === 'professor') {
+        navigate('/professor/dashboard');
+      } else {
+        navigate('/');
+      }
+    }, 1200);
   };
 
   return (

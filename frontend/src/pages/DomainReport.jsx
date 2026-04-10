@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 export default function DomainReport() {
   const [data, setData] = useState([]);
   const [domain, setDomain] = useState("c++");
-  const [theme, setTheme] = useState("dark");
+
   const [loading, setLoading] = useState(false);
 
   const fetchLeaderboard = async () => {
@@ -26,44 +26,32 @@ export default function DomainReport() {
     fetchLeaderboard();
   }, [domain]);
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+
 
   const topThree = data.slice(0, 3);
   const others = data.slice(3);
 
   return (
     <div
-      className={`min-h-screen p-4 md:p-8 transition-all duration-300 font-sans ${
-        theme === "dark"
-          ? "bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white"
-          : "bg-gradient-to-br from-gray-100 to-white text-black"
-      }`}
+      className="min-h-screen bg-sky-50 dark:bg-slate-900 p-4 md:p-8 font-sans"
     >
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide text-slate-900 dark:text-white">
           ⚡ Athenura Leaderboard
         </h1>
 
         <div className="flex gap-3">
-          <select
+            <select
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
-            className="p-2 rounded-lg bg-gray-700 text-white border-none outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-4 py-3 bg-slate-50 dark:bg-slate-800 border-[1.5px] border-slate-200 dark:border-slate-700 rounded-[14px] text-sm font-semibold focus:border-sky-400 focus:ring-[3px] focus:ring-sky-100/50 text-slate-900 dark:text-slate-100"
           >
             <option value="c++">C++</option>
             <option value="frontend">Frontend</option>
             <option value="backend">Backend</option>
           </select>
 
-          <button
-            onClick={toggleTheme}
-            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-lg"
-          >
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
         </div>
       </div>
 
@@ -90,12 +78,12 @@ export default function DomainReport() {
               key={index}
               initial={{ y: -40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className={`p-6 rounded-2xl text-center shadow-xl backdrop-blur-lg ${
+              className={`p-6 rounded-3xl text-center shadow-2xl border border-sky-100/50 backdrop-blur-sm bg-white/90 ${
                 index === 0
-                  ? "bg-yellow-400 text-black scale-105 border-2 border-yellow-200"
+                  ? "ring-4 ring-yellow-200/50 scale-105 border-yellow-400 bg-yellow-50/80"
                   : index === 1
-                  ? "bg-slate-300 text-black border-2 border-slate-100"
-                  : "bg-orange-300 text-black border-2 border-orange-200"
+                  ? "ring-2 ring-slate-100 border-slate-200 bg-slate-50/80"
+                  : "ring-4 ring-orange-200/50 border-orange-400 bg-orange-50/80"
               }`}
             >
               <h2 className="text-2xl font-black mb-2">#{user.rank}</h2>
@@ -124,9 +112,7 @@ export default function DomainReport() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className={`flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-xl shadow-md backdrop-blur-md transition border ${
-              theme === "dark"
-                ? "bg-white/5 border-white/5 hover:bg-white/10"
-                : "bg-black/5 border-black/5 hover:bg-black/10"
+              "dark:bg-slate-800/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/70"
             }`}
           >
             <div>

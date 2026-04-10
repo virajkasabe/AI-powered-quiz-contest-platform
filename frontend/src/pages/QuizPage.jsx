@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const QUESTIONS = [
   { q: "What does HTML stand for?", opts: ["HyperText Markup Language", "HighText Machine Language", "Hyper Transfer Markup Language", "HyperText Machine Link"], ans: 0 },
@@ -122,6 +123,7 @@ function SubmitModal({ answers, marked, onConfirm, onCancel }) {
 
 // ── Main QuizPage ──────────────────────────────────────────────────────────────
 export default function QuizPage() {
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState(new Array(TOTAL).fill(null));
   const [marked, setMarked] = useState(new Array(TOTAL).fill(false)); // marked for review
@@ -207,7 +209,7 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-50">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-slate-50">
 
       {/* Submit Modal */}
       {showModal && (
@@ -308,7 +310,7 @@ export default function QuizPage() {
             </div>
 
             {/* Question card */}
-            <div className="bg-white rounded-2xl border border-sky-100 p-5 mb-4">
+            <div className="bg-white rounded-3xl border border-sky-100/50 shadow-sm p-6 sm:p-8 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-lg">
                   Q {current + 1} / {TOTAL}
@@ -469,10 +471,10 @@ export default function QuizPage() {
             </div>
 
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => navigate('/intern')}
               className="mt-5 w-full h-11 bg-sky-500 hover:bg-sky-600 text-white font-bold text-sm rounded-xl transition-all"
             >
-              Back to Login
+              Back to Dashboard
             </button>
           </div>
         )}
