@@ -27,6 +27,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const adminItems = [
     { name: "Admin Panel", path: "/admin" },
+    { name: "Reports", path: "/reports" },
     { name: "Upload Data", path: "/upload" },
   ];
 
@@ -41,18 +42,18 @@ const Sidebar = ({ isOpen, onClose }) => {
       )}
 
       {/* Sidebar - responsive transform */}
-      <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-br from-sky-500 to-purple-600 dark:from-slate-900 dark:to-slate-950 text-white flex flex-col justify-between z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-64 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
         {/* TOP */}
         <div>
           {/* Logo & Close */}
-          <div className="p-6 flex items-center justify-between">
-            <div className="font-bold text-xl tracking-widest uppercase">
+          <div className="p-6 flex items-center justify-between border-b border-slate-100">
+            <div className="font-bold text-xl tracking-widest uppercase text-sky-600">
               ATHENURA
             </div>
             <button 
               onClick={onClose} 
-              className="md:hidden text-white hover:bg-white/20 p-1 rounded-lg transition-colors"
+              className="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg transition-colors"
             >
                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -62,25 +63,30 @@ const Sidebar = ({ isOpen, onClose }) => {
           {user  && (
             <div 
               onClick={() => { navigate('/profile'); onClose(); }} 
-              className="px-6 mb-4 cursor-pointer"
+              className="px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors border-b border-slate-100"
             >
-              <div className="bg-white/20 p-3 rounded-lg backdrop-blur hover:bg-white/30 transition-all border border-white/5">
-                <p className="font-semibold truncate">{user.userName}</p>
-                <p className="text-xs text-gray-200 truncate">{user.domain}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 font-semibold text-lg shadow-md">
+                  {user.userName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-800 text-sm">{user.userName}</p>
+                  <p className="text-xs text-slate-500">{user.domain}</p>
+                </div>
               </div>
             </div>
           )}
 
           {/* NAVIGATION */}
-          <nav className="flex flex-col gap-1 px-2">
+          <nav className="flex flex-col gap-0.5 px-4 py-4">
             {menuItems.map((item, i) => (
               <button
                 key={i}
                 onClick={() => { navigate(item.path); onClose(); }}
-                className={`text-left px-4 py-3 rounded-lg transition-all ${
+                className={`w-full text-left px-4 py-3 rounded-xl transition-all font-medium ${
                   location.pathname === item.path
-                    ? "bg-white text-sky-600 font-semibold shadow-md"
-                    : "hover:bg-white/20"
+                    ? "bg-sky-500 text-white shadow-lg"
+                    : "text-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:shadow-md"
                 }`}
               >
                 {item.name}
@@ -92,7 +98,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <button
                   key={i}
                   onClick={() => { navigate(item.path); onClose(); }}
-                  className="text-left px-4 py-3 rounded-lg hover:bg-white/20 text-yellow-300 transition-colors"
+                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-amber-50 hover:text-amber-700 transition-all font-medium text-amber-600 border border-amber-200/50"
                 >
                   {item.name}
                 </button>
@@ -101,26 +107,13 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* BOTTOM */}
-        <div className="p-4 flex flex-col gap-3">
-          <button
-            className="w-full bg-white/20 hover:bg-white/30 py-2 rounded-lg transition-colors border border-white/5"
-          >
-            ⚙️ Settings
-          </button>
-
+        <div className="p-4 border-t border-slate-100 mt-auto">
           <button
             onClick={handleLogout}
-            className="w-full bg-red-500 hover:bg-red-600 py-2 rounded-lg font-semibold shadow-md transition-colors"
+            className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2.5 px-4 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all text-sm"
           >
             Logout
           </button>
-
-          <div className="bg-white/20 rounded-xl p-3 text-center border border-white/10">
-            <p className="text-sm">Upgrade to Pro</p>
-            <button className="mt-2 bg-white text-sky-600 px-3 py-1 rounded-lg text-xs font-bold hover:scale-105 active:scale-95 transition-all">
-              Upgrade
-            </button>
-          </div>
         </div>
       </div>
     </>

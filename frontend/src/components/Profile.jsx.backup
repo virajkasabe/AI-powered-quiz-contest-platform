@@ -1,0 +1,172 @@
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
+const ProfilePage = () => {
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [domainCount, setDomainCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // ✅ Get logged-in user from localStorage
+        const userStr = localStorage.getItem("user");
+        let storedUser = null;
+        
+        try {
+            if (userStr) storedUser = JSON.parse(userStr);
+        } catch (e) {
+            console.error("Failed to parse user data", e);
+        }
+
+        if (!storedUser) {
+            setLoading(false);
+            return;
+        }
+
+        setUser(storedUser);
+
+        // ✅ Fetch leaderboard just for domain count
+        fetch("http://localhost:5000/api/overall")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data && Array.isArray(data.data)) {
+                    const count = data.data.filter(
+                        (item) => item.domain === storedUser.domain
+                    ).length;
+                    setDomainCount(count);
+                }
+            })
+            .catch(err => console.error("Error fetching leaderboard data:", err))
+            .finally(() => {
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[70vh] w-full font-sans">
+                 <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-sky-100 dark:border-slate-800 border-t-sky-500 dark:border-t-sky-400 rounded-full animate-spin"></div>
+                    <p className="text-slate-500 text-sm font-semibold animate-pulse">Loading Profile...</p>
+                 </div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="flex items-center justify-center min-h-[70vh] font-sans p-6 w-full">
+                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm p-8 max-w-sm w-full text-center">
+                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 dark:border-slate-700">
+                        <svg className="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Profile Missing</h2>
+                    <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed">
+                        We couldn't locate your profile details. You may need to sign in again.
+                    </p>
+                    <button 
+                        onClick={() => navigate('/')}
+                        className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md shadow-sky-500/20 active:scale-95 text-sm"
+                    >
+                        Back to Login
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full p-4 sm:p-6 lg:p-8 font-sans">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="max-w-5xl bg-white dark:bg-slate-900 rounded-3xl shadow-sm p-8 border border-slate-100 dark:border-slate-800"
+            >
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                    {/* Avatar */}
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="w-28 h-28 rounded-3xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-4xl font-black text-white shadow-lg shadow-sky-500/30 flex-shrink-0"
+                    >
+                        {user.userName?.charAt(0)?.toUpperCase()}
+                    </motion.div>
+
+                    {/* Info */}
+                    <div className="text-center md:text-left flex-1">
+                        <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-1.5 tracking-tight">{user.userName}</h2>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium mb-4 text-sm flex items-center justify-center md:justify-start gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                            {user.id || 'No ID assigned'}
+                        </p>
+
+                        <div className="flex flex-wrap gap-2.5 justify-center md:justify-start">
+                            <span className="bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-sky-100 dark:border-sky-800/30">
+                                {user.domain || 'Domain unspecified'}
+                            </span>
+                            <span className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-purple-100 dark:border-purple-800/30">
+                                Domain Peers: {domainCount}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-100 dark:border-slate-800/50">
+                    {[
+                        { label: "Badges Earned", value: user.badgesEarned || 0, icon: "⭐" },
+                        { label: "Domain Segment", value: user.domain || 'N/A', icon: "🎯" },
+                        { label: "Global Rank", value: "#--", icon: "🏆" },
+                        { label: "Current Status", value: user.status || 'Active', icon: "⚡" },
+                    ].map((item, i) => (
+                        <div
+                            key={i}
+                            className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col hover:-translate-y-1 transition-transform"
+                        >
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-lg">{item.icon}</span>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wide">{item.label}</p>
+                            </div>
+                            <p className="text-2xl font-black text-slate-800 dark:text-white truncate">{item.value}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Badges Section */}
+                <div className="mt-10">
+                    <div className="flex items-center gap-3 mb-6">
+                         <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 flex items-center justify-center text-amber-500">
+                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                         </div>
+                         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Achievement Badges</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {["Novice", "Intermediate", "Professional", "Legendary"].map(
+                            (badge, index) => {
+                                const unlocked = (user.badgesEarned || 0) > index;
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`p-5 rounded-2xl border transition-all ${unlocked ? 'bg-white dark:bg-slate-800 border-sky-200 dark:border-sky-800 shadow-md ring-1 ring-sky-50 dark:ring-slate-700' : 'bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-70 grayscale'} text-center flex flex-col items-center justify-center`}
+                                    >
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm ${unlocked ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                                            {unlocked ? "🏆" : "🔒"}
+                                        </div>
+                                        <p className={`font-bold ${unlocked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>{badge}</p>
+                                        <p className={`text-xs mt-1 font-semibold ${unlocked ? 'text-sky-500 dark:text-sky-400' : 'text-slate-400'}`}>
+                                            {unlocked ? "Unlocked" : "Locked"}
+                                        </p>
+                                    </div>
+                                )
+                            }
+                        )}
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+export default ProfilePage;

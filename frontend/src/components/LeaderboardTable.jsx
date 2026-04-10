@@ -38,13 +38,13 @@ const LeaderboardTable = ({ initialTab = 'overall', initialDomain = 'Frontend', 
   }, [activeTab, selectedDomain]);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-colors">
+    <div className="bg-white rounded-3xl border border-sky-100/50 shadow-lg overflow-hidden flex flex-col">
       {!hideControls && (
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex bg-white dark:bg-slate-950 shadow-sm border border-slate-200 dark:border-slate-800 rounded-lg p-1">
+          <div className="flex bg-white shadow-sm border border-sky-100/50 rounded-2xl p-1">
             <button 
               onClick={() => setActiveTab('overall')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'overall' ? 'bg-sky-500 text-white shadow' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
+              className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'overall' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
               Overall
             </button>
             <button 
@@ -58,7 +58,7 @@ const LeaderboardTable = ({ initialTab = 'overall', initialDomain = 'Frontend', 
             <select 
               value={selectedDomain}
               onChange={(e) => setSelectedDomain(e.target.value)}
-              className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-400/30 cursor-pointer shadow-sm">
+              className="px-4 py-2 border-[1.5px] border-slate-200 rounded-2xl text-sm font-medium text-slate-700 bg-slate-50 focus:border-sky-400 focus:ring-[3px] focus:ring-sky-100/50 cursor-pointer shadow-sm">
               {DOMAINS.map(domain => (
                 <option key={domain} value={domain}>{domain}</option>
               ))}

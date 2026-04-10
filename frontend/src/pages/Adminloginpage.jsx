@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const ShieldIcon = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -59,18 +60,41 @@ const Toast = ({ message, type }) => {
 };
 
 export default function AdminLoginPage({ onLogin, onBackClick }) {
+  const navigate = useNavigate();
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
   const [toast, setToast]       = useState({ msg: "", type: "" });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email.trim()) { setToast({ msg: "Please enter your email address.", type: "err" }); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setToast({ msg: "Please enter a valid email address.", type: "err" }); return; }
     if (!password || password.length < 6) { setToast({ msg: "Password must be at least 6 characters.", type: "err" }); return; }
-    setToast({ msg: "Authenticated — redirecting to dashboard...", type: "ok" });
-    setTimeout(() => onLogin && onLogin(), 800);
-    // TODO: await fetch('/api/admin/login', { method:'POST', body: JSON.stringify({email, password}) })
+
+    setToast({ msg: "Logging in...", type: "ok" });
+
+    // Mock role-based response (replace with real API)
+    const mockUser = {
+      userName: email,
+      role: 'admin'
+    };
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('token', 'mock-admin-token');
+
+    setTimeout(() => {
+      setToast({ msg: "Welcome Admin! Redirecting...", type: "ok" });
+      // Role-based redirect
+      const role = mockUser.role;
+      if (role === 'admin') {
+        navigate('/reports');
+      } else if (role === 'professor') {
+        navigate('/professor/dashboard');
+      } else if (role === 'intern' || role === 'student') {
+        navigate('/intern');
+      } else {
+        navigate('/');
+      }
+    }, 1200);
   };
 
   return (
