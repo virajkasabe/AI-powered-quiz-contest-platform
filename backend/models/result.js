@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const resultSchema = new mongoose.Schema({
@@ -6,10 +5,7 @@ const resultSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Intern",
   },
-  contestId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Contest",
-  },
+  contestId: String,
   domain: String,
 
   score: Number,

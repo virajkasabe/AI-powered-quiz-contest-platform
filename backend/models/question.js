@@ -7,8 +7,7 @@ const questionSchema = new mongoose.Schema({
   },
 
   contestId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Contest",
+    type: String,
   },
   // Links to specific contest [cite: 81]
   questionText: {

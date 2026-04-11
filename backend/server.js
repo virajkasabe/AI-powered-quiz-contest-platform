@@ -6,7 +6,7 @@ import connectDB from "./config/db.js";
 import authRouter from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
-import leaderboardRoutes from "./routes/leaderboradRoutes.js";
+import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import cookieParser from "cookie-parser";
 
 // Connect Database
@@ -24,8 +24,19 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api", leaderboardRoutes);
 
-// Future Routes Here
-// app.use('/api/users', require('./routes/users'));
+// Handle 404
+app.use((req, res) => {
+  res.status(404).json({ message: "❌ Route not found" });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("🔥 GLOBAL ERROR:", err.stack);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 

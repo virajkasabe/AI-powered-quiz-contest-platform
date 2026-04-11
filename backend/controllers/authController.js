@@ -2,6 +2,7 @@ import "dotenv/config";
 import Intern from "../models/intern.js";
 import Admin from "../models/admin.js";
 import { generateToken } from "../utils/JWT.js";
+import bcrypt from "bcryptjs";
 
 // 🔐 Intern Login
 export const login = async (req, res) => {
@@ -18,9 +19,14 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const dbDate = new Date(user.joiningDate)
-      .toISOString()
-      .split("T")[0];
+    // ⛔ Check if account is active
+    if (user.status === "Inactive") {
+      return res.status(403).json({ 
+        message: "❌ Your account is inactive. Please contact administration." 
+      });
+    }
+
+    const dbDate = new Date(user.joiningDate).toISOString().split("T")[0];
 
     if (dbDate !== joiningDate) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -43,7 +49,6 @@ export const login = async (req, res) => {
         role: "intern",
       },
     });
-
   } catch (error) {
     console.error("Error in login controller:", error);
 
@@ -53,6 +58,29 @@ export const login = async (req, res) => {
   }
 };
 
+export const signinAdmin = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password)
+      return res.status(400).json({ message: "Enter your credentials" });
+    const findUser = await Admin.findOne({ email });
+    if (findUser)
+      return res.status(400).json({ message: "Admin allready present." });
+
+    const newAdmin = new Admin({
+      name,
+      email,
+      password,
+    });
+    const token = generateToken(newAdmin._id, res);
+
+    await newAdmin.save();
+    return res.status(200).json({ message: "New admin created ", newAdmin });
+  } catch (error) {
+    console.log("error in sign-in of admin", error);
+    res.status(400).json({ message: "server side error" });
+  }
+};
 // 🔐 Admin Login
 export const adminLogin = async (req, res) => {
   try {
@@ -63,24 +91,26 @@ export const adminLogin = async (req, res) => {
         message: "Please provide email and password",
       });
     }
-
     const admin = await Admin.findOne({ email });
-
-    if (!admin || !(await admin.comparePassword(password))) {
-      return res.status(401).json({
-        message: "Invalid email or password",
-      });
+    if (!admin) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
     const token = generateToken(admin._id, res);
 
     res.status(200).json({
+      success: true,
       token,
-      id: admin._id,
-      email: admin.email,
-      role: admin.role,
+      user: {
+        id: admin._id,
+        email: admin.email,
+        role: admin.role,
+      },
     });
-
   } catch (error) {
     console.error("Error in adminLogin:", error);
     res.status(500).json({ message: "Internal server error" });
