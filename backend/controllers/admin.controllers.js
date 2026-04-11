@@ -6,57 +6,8 @@ import Contest from "../models/contests.js";
 import Result from "../models/result.js";
 import xlsx from "xlsx";
 import "dotenv/config";
+import { createContestID } from "../utils/createContestID.js";
 
-export const generateQuiz = async (req, res) => {
-  try {
-    const { count, domain, difficulty } = req.body;
-
-    const existingQuestions = await Question.find({ domain }).select(
-      "questionText -_id", // 👈 changed from "text" to "questionText"
-    );
-    const forbiddenList = existingQuestions.map((q) => q.questionText); // 👈 changed from q.text
-
-    const questionsData = await Groq_questions.Groq_questions(
-      domain,
-      forbiddenList,
-      count,
-    );
-
-    const filteredQuestions = questionsData.filter(
-      (q) => !forbiddenList.includes(q.question),
-    );
-
-    if (filteredQuestions.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "AI generated only duplicate questions. Try again.",
-      });
-    }
-
-    // 4. Save to MongoDB
-    const savedQuestions = await Question.insertMany(
-      filteredQuestions.map((q) => ({
-        questionText: q.question, // 👈 changed 'text' to 'questionText'
-        options: q.options,
-        correctAnswer: q.correctAnswer, // 👈 changed 'answer' to 'correctAnswer'
-        domain,
-        // Optional: you can remove 'difficulty' because it doesn't exist in your mongoose schema!
-        createdAt: new Date(),
-      })),
-    );
-
-    res.status(201).json({
-      success: true,
-      count: savedQuestions.length,
-      data: savedQuestions,
-    });
-  } catch (error) {
-    console.error("Deduplication Error:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to generate unique quiz" });
-  }
-};
 
 export const uploadInterns = async (req, res) => {
   try {
@@ -107,46 +58,85 @@ export const uploadInterns = async (req, res) => {
 };
 export const createContest = async (req, res) => {
   try {
-    let { date, domains, startTime, endTime } = req.body;
+    let { date, startTime, duration, domain, questionCount } = req.body;
 
     // ✅ Validate
-    if (!date || !domains || !startTime || !endTime) {
+    if (!date || !startTime || !duration || !domain || !questionCount) {
       return res.status(400).json({ message: "❌ All fields are required." });
     }
 
     // ✅ Ensure domains is ARRAY (IMPORTANT)
-    if (!Array.isArray(domains)) {
-      domains = [domains]; // convert single value to array
-    }
 
     // 🧠 Clean domains (remove spaces, lowercase)
-    domains = domains.map(d => d.trim().toLowerCase());
-
+    const Domain = domain.trim().toUpperCase();
+    const contestId = createContestID(Domain);
     // 🔥 Date handling
     const datePart = new Date(date).toISOString().split("T")[0];
 
     const startDateTime = new Date(`${datePart}T${startTime}:00`);
-    const endDateTime = new Date(`${datePart}T${endTime}:00`);
+    const expiryDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
     // ✅ Check existing contest
-    const existing = await Contest.findOne({ date: new Date(date) });
+    const existing = await Contest.findOne({
+      date: new Date(date),
+      domain: Domain,
+    });
     if (existing) {
       return res
         .status(400)
         .json({ message: "❌ Contest already exists for this date." });
     }
 
+    //quiz questions gen
+
+    const existingQuestions = await Question.find({ Domain }).select(
+      "questionText -_id", // 👈 changed from "text" to "questionText"
+    );
+    const forbiddenList = existingQuestions.map((q) => q.questionText); // 👈 changed from q.text
+
+    const questionsData = await Groq_questions.Groq_questions(
+      Domain,
+      forbiddenList,
+      questionCount,
+    );
+    const filteredQuestions = questionsData.filter(
+      (q) => !forbiddenList.includes(q.question),
+    );
+
+    if (filteredQuestions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "AI generated only duplicate questions. Try again.",
+      });
+    }
+
+    // 4. Save to MongoDB
+    const savedQuestions = await Question.insertMany(
+      filteredQuestions.map((q) => ({
+        questionText: q.question, // 👈 changed 'text' to 'questionText'
+        options: q.options,
+        correctAnswer: q.correctAnswer, // 👈 changed 'answer' to 'correctAnswer'
+        domain: Domain,
+        contestId,
+        // Optional: you can remove 'difficulty' because it doesn't exist in your mongoose schema!
+        createdAt: new Date(),
+      })),
+    );
     // ✅ Save PROPER STRUCTURE
     const contest = await Contest.create({
+      contestId,
       date: new Date(date),
-      domains, // ✅ ARRAY STORE (FIXED)
       startTime: startDateTime,
-      endTime: endDateTime,
+      expiryDate: expiryDateTime,
+      domain: Domain,
+      questionCount,
+      duration,
     });
 
     res.status(201).json({
       message: "✅ Contest created successfully.",
       contest,
+      savedQuestions,
     });
   } catch (error) {
     res.status(500).json({
@@ -156,108 +146,70 @@ export const createContest = async (req, res) => {
   }
 };
 
-export const submitQuiz = async (req, res) => {
+export const allInterns = async (req, res) => {
   try {
-    const { internId, contestId, domain, answers } = req.body;
-
-    let score = 0;
-
-    // Get all questions
-    const questionIds = answers.map((a) => a.questionId);
-    const questions = await Question.find({ _id: { $in: questionIds } });
-
-    const questionMap = {};
-    questions.forEach((q) => {
-      questionMap[q._id] = q;
-    });
-
-    // Calculate score
-    const evaluatedAnswers = answers.map((a) => {
-      const question = questionMap[a.questionId];
-      const isCorrect = question.correctAnswer === a.selectedAnswer;
-
-      if (isCorrect) score++;
-
-      return {
-        ...a,
-        isCorrect,
-      };
-    });
-
-    // Save result
-    const result = await Result.create({
-      internId,
-      contestId,
-      domain,
-      score,
-      totalQuestions: questions.length,
-      timeTaken: req.body.timeTaken,
-      answers: evaluatedAnswers,
-    });
-
-    res.json({
-      success: true,
-      score,
-      total: questions.length,
-    });
+    const allInterns = await Intern.find();
+    return res.status(200).json(allInterns);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.log("error in allInterns ", error);
+    res.status(400).json("server side error");
   }
 };
 
-
-
-
-
-export const getLeaderboard = async (req, res) => {
+export const getContestQuestions = async (req, res) => {
   try {
-    const { domain, contestId } = req.query;
+    const { contestId } = req.params;
 
-    // ✅ Build filter safely
-    let filter = {};
-
-    if (domain) {
-      filter.domain = domain.trim();
+    if (!contestId) {
+      return res.status(400).json({ message: "❌ contestId is required." });
     }
 
-    if (contestId) {
-      // 🔥 HANDLE BOTH CASES (String + ObjectId)
-      filter.$or = [
-        { contestId: contestId }, // if stored as string
-        ...(mongoose.Types.ObjectId.isValid(contestId)
-          ? [{ contestId: new mongoose.Types.ObjectId(contestId) }]
-          : []),
-      ];
+    const questions = await Question.find({ contestId });
+
+    if (!questions || questions.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "❌ No questions found for this contest." });
     }
 
-    // ✅ Fetch data
-    const leaderboard = await Result.find(filter)
-      .populate("internId", "name email")
-      .sort({ score: -1, timeTaken: 1 });
-
-    // ❗ DEBUG (IMPORTANT - REMOVE LATER)
-    console.log("FILTER:", filter);
-    console.log("RESULT:", leaderboard);
-
-    // ✅ Add rank
-    const ranked = leaderboard.map((item, index) => ({
-      rank: index + 1,
-      name: item.internId?.name || "Unknown",
-      email: item.internId?.email || "No Email",
-      score: item.score,
-      timeTaken: item.timeTaken,
-    }));
-
-    return res.json({
+    res.status(200).json({
       success: true,
-      count: ranked.length,
-      data: ranked,
+      count: questions.length,
+      data: questions,
     });
   } catch (error) {
-    console.error("Leaderboard Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
+    res.status(500).json({ message: "❌ Server error.", error: error.message });
+  }
+};
+
+export const updateInternStatus = async (req, res) => {
+  try {
+    const { uniqueId, status } = req.body;
+
+    if (!uniqueId || !status) {
+      return res.status(400).json({ message: "❌ uniqueId and status are required." });
+    }
+
+    if (!["Active", "Inactive"].includes(status)) {
+      return res.status(400).json({ message: "❌ Invalid status. Must be 'Active' or 'Inactive'." });
+    }
+
+    const intern = await Intern.findOneAndUpdate(
+      { uniqueId },
+      { status },
+      { new: true }
+    );
+
+    if (!intern) {
+      return res.status(404).json({ message: "❌ Intern not found." });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `✅ Intern status updated to ${status}.`,
+      data: intern,
     });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error.", error: error.message });
   }
 };
