@@ -57,10 +57,26 @@ export const uploadInterns = async (req, res) => {
 };
 export const createContest = async (req, res) => {
   try {
-    let { date, startTime, duration, domain, questionCount } = req.body;
+    let {
+      contestTitle,
+      description,
+      date,
+      startTime,
+      duration,
+      domain,
+      questionCount,
+    } = req.body;
 
     // ✅ Validate
-    if (!date || !startTime || !duration || !domain || !questionCount) {
+    if (
+      !contestTitle ||
+      !description ||
+      !date ||
+      !startTime ||
+      !duration ||
+      !domain ||
+      !questionCount
+    ) {
       return res.status(400).json({ message: "❌ All fields are required." });
     }
 
@@ -124,6 +140,8 @@ export const createContest = async (req, res) => {
     // ✅ Save PROPER STRUCTURE
     const contest = await Contest.create({
       contestId,
+      contestTitle,
+      description,
       date: new Date(date),
       startTime: startDateTime,
       expiryDate: expiryDateTime,

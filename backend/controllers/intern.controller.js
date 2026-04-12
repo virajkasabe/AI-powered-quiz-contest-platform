@@ -21,7 +21,9 @@ export const startQuiz = async (req, res) => {
     // 2. Check Timing
     const now = new Date();
     if (now < contest.startTime) {
-      return res.status(400).json({ message: "❌ This contest has not started yet." });
+      return res
+        .status(400)
+        .json({ message: "❌ This contest has not started yet." });
     }
     if (now > contest.expiryDate) {
       return res.status(400).json({ message: "❌ This contest has expired." });
@@ -30,16 +32,21 @@ export const startQuiz = async (req, res) => {
     // 3. Check for Existing Submission
     const existingResult = await Result.findOne({ internId, contestId });
     if (existingResult) {
-      return res.status(403).json({ 
-        message: "❌ You have already submitted this quiz. Multiple attempts are not allowed." 
+      return res.status(403).json({
+        message:
+          "❌ You have already submitted this quiz. Multiple attempts are not allowed.",
       });
     }
 
     // 4. Fetch Questions (Without Correct Answers)
-    const questions = await Question.find({ contestId }).select("-correctAnswer");
+    const questions = await Question.find({ contestId }).select(
+      "-correctAnswer",
+    );
 
     if (!questions || questions.length === 0) {
-      return res.status(404).json({ message: "❌ No questions found for this contest." });
+      return res
+        .status(404)
+        .json({ message: "❌ No questions found for this contest." });
     }
 
     res.status(200).json({
@@ -48,6 +55,8 @@ export const startQuiz = async (req, res) => {
       data: {
         contestDetails: {
           contestId: contest.contestId,
+          contestTitle: contest.contestTitle,
+          description: contest.description,
           domain: contest.domain,
           duration: contest.duration,
           expiryDate: contest.expiryDate,
@@ -56,7 +65,9 @@ export const startQuiz = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "❌ Internal server error.", error: error.message });
+    res
+      .status(500)
+      .json({ message: "❌ Internal server error.", error: error.message });
   }
 };
 
@@ -74,7 +85,9 @@ export const submitQuiz = async (req, res) => {
 
     const now = new Date();
     if (now < contest.startTime) {
-      return res.status(400).json({ message: "❌ This contest hasn't started yet." });
+      return res
+        .status(400)
+        .json({ message: "❌ This contest hasn't started yet." });
     }
     if (now > contest.expiryDate) {
       return res.status(400).json({ message: "❌ This contest has expired." });
@@ -143,6 +156,9 @@ export const getUpcomingQuizzes = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      title: contests.length > 0 ? contests[0].contestTitle : "None",
+      description:
+        contests.length > 0 ? contests[0].description : "No upcoming quizzes.",
       count: contests.length,
       data: contests,
     });
