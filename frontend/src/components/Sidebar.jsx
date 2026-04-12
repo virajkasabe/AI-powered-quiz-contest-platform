@@ -18,17 +18,16 @@ const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const menuItems = [
-    { name: "Leaderboard", path: "/leaderboard" },
     { name: "Contests", path: "/contests" },
-    { name: "Question Bank", path: "/questions" },
-    { name: "Rewards", path: "/rewards" },
     { name: "Profile", path: "/profile" },
   ];
 
   const adminItems = [
-    { name: "Admin Panel", path: "/admin" },
-    { name: "Reports", path: "/reports" },
-    { name: "Upload Data", path: "/upload" },
+    { name: "Leaderboard", path: "/leaderboard" },
+    { name: "Create Contest", path: "/create-contest" },
+    { name: "Review Quiz", path: "/review-quiz" },
+    { name: "All Interns", path: "/all-interns" },
+    { name: "Upload Interns", path: "/upload-interns" },
   ];
 
   return (
@@ -79,9 +78,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
           {/* NAVIGATION */}
           <nav className="flex flex-col gap-0.5 px-4 py-4">
-            {menuItems.map((item, i) => (
+            {user?.role !== "admin" && menuItems.map((item, i) => (
               <button
-                key={i}
+                key={`menu-${i}`}
                 onClick={() => { navigate(item.path); onClose(); }}
                 className={`w-full text-left px-4 py-3 rounded-xl transition-all font-medium ${
                   location.pathname === item.path
@@ -96,9 +95,13 @@ const Sidebar = ({ isOpen, onClose }) => {
             {user?.role === "admin" &&
               adminItems.map((item, i) => (
                 <button
-                  key={i}
+                  key={`admin-${i}`}
                   onClick={() => { navigate(item.path); onClose(); }}
-                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-amber-50 hover:text-amber-700 transition-all font-medium text-amber-600 border border-amber-200/50"
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-all font-medium ${
+                    location.pathname === item.path
+                      ? "bg-amber-500 text-white shadow-lg"
+                      : "hover:bg-amber-50 hover:text-amber-700 text-amber-600 border border-transparent hover:border-amber-200/50"
+                  }`}
                 >
                   {item.name}
                 </button>

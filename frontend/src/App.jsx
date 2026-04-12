@@ -5,14 +5,15 @@ import InternDashboard from './pages/InternDashboard';
 import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
 import ProfilePage from './components/Profile';
-import Rewards from './pages/Rewards';
-import QuestionBank from './pages/QuestionBank';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/Adminloginpage';
 import QuizPage from './pages/QuizPage';
 import CreateContest from './pages/CreateContest';
 import MainLayout from './layout/MainLayout';
 import NotFound from './pages/NotFound';
+import ReviewQuiz from './pages/ReviewQuiz';
+import AllInterns from './pages/AllInterns';
+import UploadInterns from './pages/UploadInterns';
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -27,10 +28,11 @@ function AppRoutes() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/reports" element={<DomainReport />} />
           <Route path="/intern" element={<InternDashboard />} />
-          <Route path="/rewards" element={<Rewards />} />
-          <Route path="/questions" element={<QuestionBank />} />
           <Route path='/profile' element={<ProfilePage />} />
-<Route path="/contests" element={<CreateContest />} />
+<Route path="/create-contest" element={<CreateContest />} />
+          <Route path="/review-quiz" element={<ReviewQuiz />} />
+          <Route path="/all-interns" element={<AllInterns />} />
+          <Route path="/upload-interns" element={<UploadInterns />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
