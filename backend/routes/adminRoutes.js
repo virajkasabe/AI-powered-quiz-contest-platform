@@ -6,6 +6,8 @@ import {
   allInterns,
   getContestQuestions,
   updateInternStatus,
+  singleIntern,
+  replaceQuestion,
 } from "../controllers/admin.controllers.js";
 
 import { protectRoute } from "../middlewares/authMiddleware.js";
@@ -19,6 +21,7 @@ router.use(protectRoute);
 router.use(isAdmin);
 // 📂 Upload Interns (Excel File)
 router.post("/upload-interns", uploadInternsFile, uploadInterns);
+router.post("/upload-single-intern", singleIntern);
 // 🏆 Create Contest
 router.post("/create-contest", createContest);
 
@@ -28,5 +31,8 @@ router.get("/get-questions/:contestId", getContestQuestions);
 
 // 🔄 Update Intern Status (Active/Inactive)
 router.patch("/update-status", updateInternStatus);
+
+// 🔄 Replace Question with AI Content
+router.put("/replace-question/:id", replaceQuestion);
 
 export default router;

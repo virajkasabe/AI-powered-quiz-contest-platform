@@ -8,7 +8,6 @@ import xlsx from "xlsx";
 import "dotenv/config";
 import { createContestID } from "../utils/createContestID.js";
 
-
 export const uploadInterns = async (req, res) => {
   try {
     // req.file is provided by multer (file upload middleware)
@@ -187,17 +186,21 @@ export const updateInternStatus = async (req, res) => {
     const { uniqueId, status } = req.body;
 
     if (!uniqueId || !status) {
-      return res.status(400).json({ message: "❌ uniqueId and status are required." });
+      return res
+        .status(400)
+        .json({ message: "❌ uniqueId and status are required." });
     }
 
     if (!["Active", "Inactive"].includes(status)) {
-      return res.status(400).json({ message: "❌ Invalid status. Must be 'Active' or 'Inactive'." });
+      return res.status(400).json({
+        message: "❌ Invalid status. Must be 'Active' or 'Inactive'.",
+      });
     }
 
     const intern = await Intern.findOneAndUpdate(
       { uniqueId },
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!intern) {
@@ -211,5 +214,98 @@ export const updateInternStatus = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "❌ Server error.", error: error.message });
+  }
+};
+
+export const singleIntern = async (req, res) => {
+  try {
+    const { uniqueId, name, email, domain, joiningDate } = req.body;
+
+    if (!uniqueId || !name || !email || !domain || !joiningDate) {
+      return res
+        .status(400)
+        .json({ massage: "uplode all details of interns " });
+    }
+
+    const oldUser = await Intern.findOne({ uniqueId });
+    if (oldUser) {
+      return res.status(400).json({ message: "Intern allready present" });
+    }
+    const newIntern = new Intern({
+      uniqueId,
+      name,
+      email,
+      domain,
+      joiningDate: new Date(joiningDate),
+    });
+
+    await newIntern.save();
+    return res.status(200).json({ message: "New intern added", newIntern });
+  } catch (error) {
+    console.log("error in adding new intern", error);
+    res.status(400).json({ message: "server side error" });
+  }
+};
+
+export const replaceQuestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "❌ Question ID is required." });
+    }
+
+    // 1. Find the existing question
+    const oldQuestion = await Question.findById(id);
+    if (!oldQuestion) {
+      return res.status(404).json({ message: "❌ Question not found." });
+    }
+
+    const { domain, contestId } = oldQuestion;
+
+    // 2. Get existing questions in this domain/contest to avoid duplicates
+    const existingQuestions = await Question.find({ domain }).select(
+      "questionText -_id",
+    );
+    const forbiddenList = existingQuestions.map((q) => q.questionText);
+
+    // 3. Generate 1 new question via AI
+    const questionsData = await Groq_questions.Groq_questions(
+      domain,
+      forbiddenList,
+      1,
+    );
+
+    const newQuestionData = questionsData[0];
+
+    if (!newQuestionData) {
+      return res.status(500).json({
+        success: false,
+        message: "❌ AI failed to generate a replacement question. Try again.",
+      });
+    }
+
+    // 4. Update the question document
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      id,
+      {
+        questionText: newQuestionData.question,
+        options: newQuestionData.options,
+        correctAnswer: newQuestionData.correctAnswer,
+      },
+      { new: true },
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "✅ Question replaced successfully with AI content.",
+      data: updatedQuestion,
+    });
+  } catch (error) {
+    console.error("Error in replaceQuestion:", error);
+    res.status(500).json({
+      message: "❌ Server error during question replacement.",
+      error: error.message,
+    });
   }
 };
