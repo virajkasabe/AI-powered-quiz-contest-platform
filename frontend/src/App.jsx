@@ -14,6 +14,7 @@ import NotFound from './pages/NotFound';
 import ReviewQuiz from './pages/ReviewQuiz';
 import AllInterns from './pages/AllInterns';
 import UploadInterns from './pages/UploadInterns';
+import Register from './pages/Register';
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ function AppRoutes() {
       <Routes>
         <Route path='/' element={<LoginPage onLogin={() => navigate('/intern')} onAdminClick={() => navigate('/admin-login')} />} />
         <Route path='/admin-login' element={<AdminLoginPage onLogin={() => navigate('/reports')} onBackClick={() => navigate('/')} />} />
+        <Route path='/register' element={<Register />} />
         <Route path='/quiz' element={<QuizPage />} />
         
         <Route element={<MainLayout />} >
