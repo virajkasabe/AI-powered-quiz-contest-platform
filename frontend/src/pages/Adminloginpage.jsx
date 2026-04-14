@@ -216,14 +216,16 @@ export default function AdminLoginPage({ onLogin, onBackClick }) {
             Back to Intern Login
           </button>
 
-          <p className="mt-5 text-center text-[12.5px] text-slate-500">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-sky-600 font-bold hover:text-sky-700 hover:underline transition-all">
-              Register here
-            </Link>
-          </p>
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-center text-[12px] text-slate-500">
+              Don't have an account?{" "}
+              <Link to="/register" className="text-sky-600 font-bold hover:text-sky-700 hover:underline transition-all">
+                Register here
+              </Link>
+            </p>
+          </div>
 
-          <p className="mt-5 text-center text-[11px] text-slate-300 border-t border-slate-100 pt-3">
+          <p className="mt-4 text-center text-[11px] text-slate-300">
             Secured by <span className="text-sky-500 font-semibold">Athenura</span> · Admin access only · v2.0
           </p>
         </div>
