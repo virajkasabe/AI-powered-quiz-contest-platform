@@ -3,7 +3,11 @@ import express from "express";
 import {
   uploadInterns,
   createContest,
-  generateQuiz,
+  allInterns,
+  getContestQuestions,
+  updateInternStatus,
+  singleIntern,
+  replaceQuestion,
 } from "../controllers/admin.controllers.js";
 
 import { protectRoute } from "../middlewares/authMiddleware.js";
@@ -15,14 +19,20 @@ const router = express.Router();
 // 🔐 Apply authentication + admin check to all routes
 router.use(protectRoute);
 router.use(isAdmin);
-
 // 📂 Upload Interns (Excel File)
 router.post("/upload-interns", uploadInternsFile, uploadInterns);
-
+router.post("/upload-single-intern", singleIntern);
 // 🏆 Create Contest
 router.post("/create-contest", createContest);
 
-// 🤖 Generate Quiz
-router.get("/generate-quiz", generateQuiz);
+router.get("/all-interns", allInterns);
+
+router.get("/get-questions/:contestId", getContestQuestions);
+
+// 🔄 Update Intern Status (Active/Inactive)
+router.patch("/update-status", updateInternStatus);
+
+// 🔄 Replace Question with AI Content
+router.put("/replace-question/:id", replaceQuestion);
 
 export default router;

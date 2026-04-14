@@ -3,7 +3,7 @@ import Leaderboard from './pages/Leaderboard';
 import DomainReport from './pages/DomainReport';
 import InternDashboard from './pages/InternDashboard';
 import { ThemeProvider } from './context/ThemeContext';
-import './App.css';
+
 import ProfilePage from './components/Profile';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/Adminloginpage';
@@ -14,7 +14,11 @@ import NotFound from './pages/NotFound';
 import ReviewQuiz from './pages/ReviewQuiz';
 import AllInterns from './pages/AllInterns';
 import UploadInterns from './pages/UploadInterns';
+
 import Register from './pages/Register';
+
+import MyQuizzes from './pages/MyQuizzes';
+
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -22,14 +26,19 @@ function AppRoutes() {
     <div className="app-container">
       <Routes>
         <Route path='/' element={<LoginPage onLogin={() => navigate('/intern')} onAdminClick={() => navigate('/admin-login')} />} />
+
         <Route path='/admin-login' element={<AdminLoginPage onLogin={() => navigate('/reports')} onBackClick={() => navigate('/')} />} />
         <Route path='/register' element={<Register />} />
+
+        <Route path='/admin-login' element={<AdminLoginPage onLogin={() => navigate('/all-interns')} onBackClick={() => navigate('/')} />} />
+
         <Route path='/quiz' element={<QuizPage />} />
         
         <Route element={<MainLayout />} >
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/reports" element={<DomainReport />} />
           <Route path="/intern" element={<InternDashboard />} />
+          <Route path="/my-quizzes" element={<MyQuizzes />} />
           <Route path='/profile' element={<ProfilePage />} />
 <Route path="/create-contest" element={<CreateContest />} />
           <Route path="/review-quiz" element={<ReviewQuiz />} />

@@ -19,6 +19,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const menuItems = [
     { name: "Contests", path: "/contests" },
+    { name: "My Quizzes", path: "/my-quizzes" },
     { name: "Profile", path: "/profile" },
   ];
 
@@ -41,18 +42,18 @@ const Sidebar = ({ isOpen, onClose }) => {
       )}
 
       {/* Sidebar - responsive transform */}
-      <div className={`fixed inset-y-0 left-0 w-64 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
         {/* TOP */}
         <div>
           {/* Logo & Close */}
-          <div className="p-6 flex items-center justify-between border-b border-slate-100">
-            <div className="font-bold text-xl tracking-widest uppercase text-sky-600">
+          <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+            <div className="font-bold text-xl tracking-widest uppercase text-sky-600 dark:text-sky-400">
               ATHENURA
             </div>
             <button 
               onClick={onClose} 
-              className="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+              className="md:hidden text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors"
             >
                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -62,15 +63,15 @@ const Sidebar = ({ isOpen, onClose }) => {
           {user  && (
             <div 
               onClick={() => { navigate('/profile'); onClose(); }} 
-              className="px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors border-b border-slate-100"
+              className="px-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 font-semibold text-lg shadow-md">
+                <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-700 dark:text-sky-400 font-semibold text-lg shadow-md">
                   {user.userName.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-800 text-sm">{user.userName}</p>
-                  <p className="text-xs text-slate-500">{user.domain}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{user.userName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{user.domain}</p>
                 </div>
               </div>
             </div>
@@ -85,7 +86,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 className={`w-full text-left px-4 py-3 rounded-xl transition-all font-medium ${
                   location.pathname === item.path
                     ? "bg-sky-500 text-white shadow-lg"
-                    : "text-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:shadow-md"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 hover:shadow-md"
                 }`}
               >
                 {item.name}
@@ -100,7 +101,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   className={`w-full text-left px-4 py-3 rounded-xl transition-all font-medium ${
                     location.pathname === item.path
                       ? "bg-amber-500 text-white shadow-lg"
-                      : "hover:bg-amber-50 hover:text-amber-700 text-amber-600 border border-transparent hover:border-amber-200/50"
+                      : "hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:text-amber-700 dark:hover:text-amber-400 text-amber-600 dark:text-amber-500 border border-transparent hover:border-amber-200/50 dark:hover:border-amber-700/50"
                   }`}
                 >
                   {item.name}
@@ -110,7 +111,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* BOTTOM */}
-        <div className="p-4 border-t border-slate-100 mt-auto">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
           <button
             onClick={handleLogout}
             className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2.5 px-4 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all text-sm"

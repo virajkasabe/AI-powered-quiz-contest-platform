@@ -5,7 +5,12 @@ import Admin from "../models/admin.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
-    const token = req.cookies.jwt;
+    // Extract token from cookies OR Authorization header
+    let token = req.cookies.jwt;
+    
+    if (!token && req.headers.authorization?.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
       return res
@@ -28,6 +33,14 @@ export const protectRoute = async (req, res, next) => {
     }
 
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    // ⛔ Block Inactive users
+    if (user.role === "intern" && user.status === "Inactive") {
+      return res.status(403).json({ 
+        message: "❌ Access denied. Your account is inactive." 
+      });
+    }
+
 
     // Attach user to the request object
     req.user = user;
