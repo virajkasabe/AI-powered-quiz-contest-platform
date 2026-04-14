@@ -26,9 +26,9 @@ export default function Navbar({ onLogin }) {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between
-        px-6 md:px-[6%] h-[68px] bg-white/95 backdrop-blur-xl
-        border-b border-sky-100 transition-all duration-300
-        ${scrolled ? "shadow-[0_4px_24px_rgba(2,132,199,0.1)]" : ""}`}
+        px-6 md:px-[6%] h-[68px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl
+        border-b border-sky-100 dark:border-slate-800 transition-all duration-300
+        ${scrolled ? "shadow-[0_4px_24px_rgba(2,132,199,0.1)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]" : ""}`}
     >
       {/* ── Logo ── */}
       <Link to="/" className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export default function Navbar({ onLogin }) {
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         </div>
-        <span className="font-syne font-extrabold text-[19px] text-sky-800 tracking-tight">
+        <span className="font-syne font-extrabold text-[19px] text-sky-800 dark:text-sky-400 tracking-tight">
           Athenura
         </span>
       </Link>
@@ -56,8 +56,8 @@ export default function Navbar({ onLogin }) {
                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
                   after:rounded-full after:bg-sky-500 after:transition-all
                   ${active
-                    ? "text-sky-600 after:w-full"
-                    : "text-gray-600 hover:text-sky-600 after:w-0 hover:after:w-full"
+                    ? "text-sky-600 dark:text-sky-400 after:w-full"
+                    : "text-gray-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 after:w-0 hover:after:w-full"
                   }`}
               >
                 {label}
@@ -71,8 +71,8 @@ export default function Navbar({ onLogin }) {
       <div className="hidden md:flex items-center gap-2.5">
         <button
           onClick={onLogin}
-          className="bg-transparent text-sky-700 border border-sky-300 px-5 py-2
-            rounded-full text-sm font-medium hover:bg-sky-50 hover:border-sky-500
+          className="bg-transparent text-sky-700 dark:text-sky-400 border border-sky-300 dark:border-sky-800 px-5 py-2
+            rounded-full text-sm font-medium hover:bg-sky-50 dark:hover:bg-sky-900/50 hover:border-sky-500
             transition-all cursor-pointer"
         >
           Login
@@ -94,23 +94,23 @@ export default function Navbar({ onLogin }) {
         className="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer border-none bg-transparent"
         aria-label="Toggle menu"
       >
-        <span className={`w-6 h-0.5 bg-gray-700 rounded transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-        <span className={`w-6 h-0.5 bg-gray-700 rounded transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-        <span className={`w-6 h-0.5 bg-gray-700 rounded transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        <span className={`w-6 h-0.5 bg-gray-700 dark:bg-slate-400 rounded transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+        <span className={`w-6 h-0.5 bg-gray-700 dark:bg-slate-400 rounded transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+        <span className={`w-6 h-0.5 bg-gray-700 dark:bg-slate-400 rounded transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
       </button>
 
       {/* ── Mobile Menu ── */}
       {menuOpen && (
-        <div className="animate-slide-down absolute top-[68px] left-0 right-0 bg-white
-          border-b border-sky-100 shadow-lg px-6 py-4 flex flex-col gap-3 md:hidden">
+        <div className="animate-slide-down absolute top-[68px] left-0 right-0 bg-white dark:bg-slate-900
+          border-b border-sky-100 dark:border-slate-800 shadow-lg px-6 py-4 flex flex-col gap-3 md:hidden">
           {links.map(({ to, label }) => {
             const active = location.pathname === to;
             return (
               <Link
                 key={to}
                 to={to}
-                className={`text-sm font-medium py-2 border-b border-sky-50
-                  ${active ? "text-sky-600" : "text-gray-600"}`}
+                className={`text-sm font-medium py-2 border-b border-sky-50 dark:border-slate-800
+                  ${active ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-slate-400"}`}
               >
                 {label}
               </Link>
@@ -119,7 +119,7 @@ export default function Navbar({ onLogin }) {
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => { setMenuOpen(false); onLogin(); }}
-              className="flex-1 border border-sky-300 text-sky-700 py-2.5
+              className="flex-1 border border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-400 py-2.5
                 rounded-full text-sm font-medium bg-transparent cursor-pointer"
             >
               Login

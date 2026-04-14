@@ -175,8 +175,11 @@ export const getInternHistory = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      title: history.length > 0 ? history[0].contestTitle : "None",
+      description:
+        history.length > 0 ? history[0].description : "No upcoming quizzes.",
       count: history.length,
-      data: history,
+      history,
     });
   } catch (error) {
     res.status(500).json({ message: "❌ Server error.", error: error.message });
