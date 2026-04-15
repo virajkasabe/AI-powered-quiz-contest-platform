@@ -106,7 +106,7 @@ const MyQuizzes = () => {
         </div>
 
         {/* History Cards */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-10">
+        <div className="flex flex-col gap-5 pb-10">
           {filteredHistory.length > 0 ? (
             filteredHistory.map((item, idx) => (
               <motion.div
@@ -115,42 +115,49 @@ const MyQuizzes = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 onClick={() => setSelectedQuiz(item)}
-                className="group relative bg-white dark:bg-slate-800/60 rounded-[2rem] p-8 border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-xl hover:shadow-sky-500/10 transition-all duration-300 cursor-pointer"
+                className="group w-full bg-slate-50 dark:bg-slate-800/40 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-700/50 hover:shadow-lg transition-all duration-300"
               >
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block">
-                      {item.date}
-                    </span>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-white group-hover:text-sky-600 transition-colors">
-                      {item.contestTitle}
-                    </h3>
-                  </div>
-                  <div className="text-right p-4 bg-sky-50 dark:bg-sky-900/20 rounded-2xl border border-sky-100 dark:border-sky-800/50">
-                    <p className="text-[10px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-tighter mb-1">Percentage</p>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white">{item.percentage}%</p>
-                  </div>
-                </div>
+                <div className="flex flex-col xl:flex-row items-center justify-between gap-6 w-full">
+                  <div className="flex-1 w-full flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
+                    <div className="w-full md:min-w-[220px]">
+                      <span className="px-3 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-full mb-3 inline-block">
+                        {item.domain}
+                      </span>
+                      <h3 className="text-xl font-bold text-slate-800 dark:text-white group-hover:text-sky-500 transition-colors truncate">
+                        {item.contestTitle}
+                      </h3>
+                    </div>
 
-                <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-100 dark:border-slate-700/50">
-                  <div className="text-center">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Total Questions</p>
-                    <p className="text-xl font-black text-slate-700 dark:text-slate-300">{item.totalQuestions}</p>
+                    <div className="flex flex-wrap md:flex-nowrap items-center gap-6 xl:gap-8 w-full border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700/50 pt-4 md:pt-0 md:pl-6 xl:pl-8">
+                       <div className="flex flex-col gap-1 w-[45%] md:w-auto">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date & Time</p>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.date}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">10:00 AM</p>
+                      </div>
+
+                      <div className="flex flex-col gap-1 w-[45%] md:w-auto md:border-l border-slate-200 dark:border-slate-700/50 md:pl-6 xl:pl-8">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Duration / Spent</p>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.timeTaken}</p>
+                      </div>
+
+                      <div className="flex flex-col gap-1 w-[45%] md:w-auto md:border-l border-slate-200 dark:border-slate-700/50 md:pl-6 xl:pl-8">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
+                        <div className="flex items-center gap-2">
+                           <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                           <span className="text-sm font-bold text-emerald-600 dark:text-emerald-500">Completed</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-center border-x border-slate-100 dark:border-slate-700/50">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Correct Ans</p>
-                    <p className="text-xl font-black text-emerald-500">{item.score}</p>
+
+                  <div className="w-full xl:w-auto shrink-0 border-t xl:border-none border-slate-200 dark:border-slate-700/50 pt-5 xl:pt-0 flex flex-col items-center">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedQuiz(item); }}
+                      className="w-full xl:w-[160px] px-6 py-3.5 bg-emerald-100 hover:bg-emerald-500 text-emerald-700 hover:text-white dark:bg-emerald-900/40 dark:text-emerald-400 dark:hover:bg-emerald-500 font-bold rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:shadow-[0_6px_16px_rgba(16,185,129,0.25)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm"
+                    >
+                      View Result
+                    </button>
                   </div>
-                  <div className="text-center">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Your Score</p>
-                    <p className="text-xl font-black text-sky-500">{item.score}/{item.totalQuestions}</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <p className="text-xs font-bold text-sky-500 flex items-center gap-2">
-                     Click to view details <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"/></svg>
-                   </p>
                 </div>
               </motion.div>
             ))
