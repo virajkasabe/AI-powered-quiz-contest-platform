@@ -66,8 +66,8 @@ const CreateContest = () => {
       // Mock API call - replace with real endpoint
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Navigate to review-quiz page and pass the created contest data
-      navigate('/review-quiz', { state: { newContest: formData } });
+      // Navigate to review-question page and pass the created contest data
+      navigate('/review-question', { state: { newContest: formData } });
     } catch (error) {
       setErrors({ submit: 'Failed to create contest. Please try again.' });
     } finally {

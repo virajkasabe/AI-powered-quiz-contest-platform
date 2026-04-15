@@ -1,25 +1,40 @@
-# AI-Powered Quiz Contest Platform TODO
+# Register Page Implementation Plan
 
-## Completed Steps
-- ✅ Created `frontend/src/pages/CreateContest.jsx` - Complete responsive form matching design system
-  - All required fields with validation
-  - Image upload with preview/drag-drop
-  - Loading states, error handling
-  - Production-safe React code with motion
+## Status: ✅ Complete (minor nav link addition pending)
 
-## Next Steps
-- 🔄 Update App.jsx routing (step below)
-- Add real API integration (POST /api/admin/contests)
-- Create contests list page (/contests)
-- Add admin auth check for create
-- Test responsive + dark mode
+**Step 1: Verify/Enhance Register.jsx**  
+- [x] Read existing Register.jsx - fully implemented with all fields (Name, Email, Password, Secret Key)  
+- [x] Confirmed validation (required, email regex, password 6+, secret required)  
+- [x] Confirmed UI matches LoginPage.jsx (split layout, sky gradient left panel, white form right, icons, responsive)  
+- [x] Confirmed API call to /api/auth/register, loading, toast success/error, redirect on success  
+- [x] Confirmed nav link to Login ('Login here')
 
-## Completed Steps
-- ✅ Added /contests route to App.jsx
+**Step 2: Add Navigation from LoginPage.jsx to Register**  
+- [x] Added 'Don't have account? Register' link below Admin button  
 
-## Next Steps
-- 🧪 Test: `npm run dev`, navigate Sidebar -> Contests
-- 🔗 Backend: Replace mock submit with fetch('/api/admin/contests')
-- 📋 Create contests list (/contests)
+
+**Step 3: Verify Routing**  
+- [x] App.jsx has `<Route path='/register' element={<Register />} />`  
+
+## Status: ✅ COMPLETE
+
+**Step 1: Verify/Enhance Register.jsx**  
+- [x] Read existing Register.jsx - fully implemented with all fields, validation, UI match, API integration, nav link to Login
+
+**Step 2: Add Navigation from LoginPage.jsx to Register**  
+- [x] Added 'Don't have account? Register here' Link with matching style
+
+**Step 3: Verify Routing**  
+- [x] `/register` route confirmed in App.jsx
+
+**Step 4: Backend Integration**  
+- [x] Frontend calls POST /api/auth/register - ready for backend handling
+
+**Step 5: Test**  
+- Run `cd frontend && npm run dev`  
+- Navigate to http://localhost:5173/register  
+- Test validation, submission, responsive design, nav between Login/Register
+
+All requirements met: fields, UI match, responsive, API-ready, bidirectional navigation.
 
 

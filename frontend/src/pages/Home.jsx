@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 /* ─────────────────────────────────────────
@@ -198,7 +198,7 @@ const FEATURES = [
 
 function FeaturesSection() {
   return (
-    <section className="py-16 px-6 md:px-[6%] bg-gray-50">
+    <section id="features" className="py-16 px-6 md:px-[6%] bg-gray-50">
       <SectionTag>Platform Features</SectionTag>
       <SectionTitle>Everything your intern program needs</SectionTitle>
       <SectionSub>
@@ -375,14 +375,112 @@ function CTASection() {
         <p className="text-sky-200 text-sm mb-7 max-w-md mx-auto leading-7">
           Set up your first contest in minutes. No manual question writing, no spreadsheet scoring.
         </p>
-        <Link
-          to="/contact"
+        <a
+          href="#contact"
           className="inline-block bg-white text-brand-700 px-8 py-3.5 rounded-full
             font-semibold text-sm shadow-[0_6px_20px_rgba(0,0,0,0.15)]
             hover:-translate-y-0.5 transition-all"
         >
           Contact Us Today
-        </Link>
+        </a>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────
+   CONTACT SECTION
+───────────────────────────────────────── */
+function ContactSection() {
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [errors, setErrors] = useState({});
+
+  const set = (k, v) => {
+    setForm(f => ({ ...f, [k]: v }));
+    if (errors[k]) setErrors(e => ({ ...e, [k]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = "Name is required.";
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(form.email)) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+    if (!form.subject.trim()) newErrors.subject = "Subject is required.";
+    if (!form.message.trim()) newErrors.message = "Message is required.";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validate()) {
+      // Simulate backend API
+      setTimeout(() => setSubmitted(true), 500);
+    }
+  };
+
+  const inputClass = (hasError) => `w-full border rounded-xl px-4 py-3 text-sm bg-sky-50 outline-none transition-all focus:bg-white focus:shadow-[0_0_0_3px_rgba(56,189,248,0.1)] ${hasError ? 'border-red-400 focus:border-red-500' : 'border-sky-100 focus:border-sky-400'}`;
+
+  return (
+    <section id="contact" className="py-20 px-6 md:px-[6%] bg-white relative">
+      <div className="text-center mb-10">
+        <SectionTag>Get in Touch</SectionTag>
+        <SectionTitle>Contact Us</SectionTitle>
+        <p className="text-sm text-gray-500 max-w-lg mx-auto">
+          Have questions about the platform? Want a demo? Fill out the form below and we'll get back to you.
+        </p>
+      </div>
+      
+      <div className="max-w-xl mx-auto">
+        {!submitted ? (
+          <form className="bg-white border border-sky-100 rounded-3xl p-8 shadow-[0_8px_32px_rgba(2,132,199,0.08)]" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-700 mb-1 tracking-wide">Name <span className="text-red-400">*</span></label>
+                <input type="text" placeholder="Your Name" value={form.name} onChange={(e) => set("name", e.target.value)} className={inputClass(errors.name)} />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-700 mb-1 tracking-wide">Email <span className="text-red-400">*</span></label>
+                <input type="email" placeholder="your@email.com" value={form.email} onChange={(e) => set("email", e.target.value)} className={inputClass(errors.email)} />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-700 mb-1 tracking-wide">Subject <span className="text-red-400">*</span></label>
+                <input type="text" placeholder="How can we help?" value={form.subject} onChange={(e) => set("subject", e.target.value)} className={inputClass(errors.subject)} />
+                {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-700 mb-1 tracking-wide">Message <span className="text-red-400">*</span></label>
+                <textarea placeholder="Write your message here..." rows={4} value={form.message} onChange={(e) => set("message", e.target.value)} className={`${inputClass(errors.message)} resize-y min-h-[100px]`} />
+                {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
+              </div>
+
+              <button type="submit" className="w-full bg-gradient-to-r from-brand-700 to-sky-500 text-white py-3.5 rounded-full text-sm font-semibold shadow-[0_6px_18px_rgba(2,132,199,0.35)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(2,132,199,0.45)] transition-all cursor-pointer border-none mt-2">
+                Send Message
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="text-center py-12 px-6 bg-sky-50 rounded-3xl border border-sky-200">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5 shadow-sm">
+              <svg className="w-8 h-8 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+            </div>
+            <h3 className="font-syne font-bold text-xl text-sky-800 mb-2">Message Sent!</h3>
+            <p className="text-sm text-gray-600 mb-6">Thanks for reaching out! We'll get back to you shortly.</p>
+            <button onClick={() => { setSubmitted(false); setForm({ name: "", email: "", subject: "", message: "" }); }} className="text-sm font-medium text-brand-600 underline hover:text-brand-800 transition-colors bg-transparent border-none cursor-pointer">
+              Send another message
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -468,15 +566,15 @@ export default function Home({ onLogin }) {
             </p>
 
             <div className="flex gap-3 flex-wrap animate-fade-up anim-fill delay-4">
-              <Link
-                to="/about"
+              <a
+                href="#features"
                 className="bg-brand-700 text-white px-7 py-3.5 rounded-full text-sm
                   font-semibold shadow-[0_6px_20px_rgba(2,132,199,0.4)]
                   hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(2,132,199,0.5)]
                   transition-all"
               >
                 Explore the Platform
-              </Link>
+              </a>
               <button
                 onClick={onLogin}
                 className="bg-white text-sky-700 border border-sky-300 px-7 py-3.5
@@ -500,6 +598,7 @@ export default function Home({ onLogin }) {
       <HowSection />
       <LeaderboardSection />
       <CTASection />
+      <ContactSection />
     </>
   );
 }

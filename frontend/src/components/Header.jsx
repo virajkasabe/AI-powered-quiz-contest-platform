@@ -8,6 +8,42 @@ const Header = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  React.useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUserData(JSON.parse(storedUser));
+      } catch (err) {}
+    }
+  }, []);
+
+  const isIntern = userData?.role === 'intern' || userData?.role === 'student';
+  
+  let displayName = 'Admin User';
+  let displayRole = 'Super Admin';
+  let avatarLetter = 'A';
+
+  if (isIntern) {
+    if (userData.firstName && userData.lastName) {
+      displayName = `${userData.firstName} ${userData.lastName}`;
+    } else if (userData.firstName) {
+       displayName = userData.firstName;
+    } else if (userData.name) {
+      displayName = userData.name;
+    } else if (userData.userName) {
+      // Just in case it's a mock user format
+      displayName = userData.userName;
+    } else {
+      displayName = 'Intern User';
+    }
+    displayRole = 'Intern';
+    
+    // To only take alphabets or if fallback 'I'
+    const cleanName = displayName.replace(/[^a-zA-Z]/g, '');
+    avatarLetter = cleanName ? cleanName.charAt(0).toUpperCase() : 'I';
+  }
 
   return (
 <header className="h-20 shadow-sm border-b border-sky-200/50 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 z-10 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-colors duration-300">
@@ -159,11 +195,11 @@ const Header = ({ onMenuClick }) => {
             onClick={() => setProfileOpen(prev => !prev)}
           >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 text-white flex items-center justify-center font-bold shadow-lg ring-2 ring-white/50">
-              A
+              {avatarLetter}
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">Admin User</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">Super Admin</p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">{displayName}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">{displayRole}</p>
             </div>
             <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -179,11 +215,11 @@ const Header = ({ onMenuClick }) => {
               <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 text-white flex items-center justify-center font-bold shadow-lg">
-                    A
+                    {avatarLetter}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800 dark:text-slate-100">Admin User</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Super Admin</p>
+                    <p className="font-semibold text-slate-800 dark:text-slate-100">{displayName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{displayRole}</p>
                   </div>
                 </div>
               </div>
