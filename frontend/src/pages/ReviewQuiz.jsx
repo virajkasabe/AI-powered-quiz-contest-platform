@@ -257,7 +257,7 @@ const ReviewQuiz = () => {
                </div>
              ) : (
                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
-                 <table className="w-full">
+                 <table className="w-full whitespace-nowrap">
                    <thead className="bg-sky-50/50 dark:bg-slate-800/80 transition-colors duration-300">
                      <tr>
                        <th className="px-6 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Quiz Title / Intern</th>

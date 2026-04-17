@@ -26,9 +26,9 @@ const InternDashboard = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 font-sans">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">My Performance ✨</h1>
+<h1 className="text-[clamp(1.75rem,5vw,2.5rem)] font-bold text-slate-800 dark:text-slate-100 mb-2">My Performance ✨</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm">Track your progress and rankings internally.</p>
         </div>
       </div>
@@ -53,7 +53,7 @@ const InternDashboard = () => {
               <div>
                 <h3 className="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider mb-2 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">Overall Rank</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl lg:text-3xl font-black text-slate-800 dark:text-white">#{CURRENT_INTERN.overallRank}</span>
+<span className="text-[clamp(2.5rem,10vw,4.5rem)] lg:text-3xl font-black text-slate-800 dark:text-white">#{CURRENT_INTERN.overallRank}</span>
                   <span className="text-slate-400 font-medium">/ {CURRENT_INTERN.totalInterns}</span>
                 </div>
               </div>
@@ -82,7 +82,7 @@ const InternDashboard = () => {
               <div>
                 <h3 className="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider mb-2 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">{CURRENT_INTERN.domain} Rank</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl lg:text-3xl font-black text-sky-500 dark:text-sky-400">#{CURRENT_INTERN.domainRank}</span>
+<span className="text-[clamp(2.5rem,10vw,4.5rem)] lg:text-3xl font-black text-sky-500 dark:text-sky-400">#{CURRENT_INTERN.domainRank}</span>
                   <span className="text-slate-400 font-medium">/ {CURRENT_INTERN.domainInterns}</span>
                 </div>
               </div>
@@ -105,12 +105,12 @@ const InternDashboard = () => {
             </div>
           ) : (
             <>
-              <div className="bg-white rounded-3xl border border-sky-100/50 shadow-sm p-8 flex items-center justify-between">
+              <div className="bg-white rounded-3xl border border-sky-100/50 shadow-sm p-6 lg:p-8 flex flex-col sm:flex-row items-center sm:justify-between gap-6 text-center sm:text-left">
                    <div>
                       <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Your Score</p>
                       <p className="text-3xl font-black text-slate-700 dark:text-slate-100">{CURRENT_INTERN.score} <span className="text-lg font-medium text-slate-400">pts</span></p>
                    </div>
-                   <div className="h-16 w-px bg-slate-100 dark:bg-slate-800"></div>
+                   <div className="h-px w-full sm:w-px sm:h-16 bg-slate-100 dark:bg-slate-800"></div>
                    <div>
                       <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Recent Quiz</p>
                       <p className="text-xl font-bold text-slate-700 dark:text-slate-100">85% <span className="text-sm font-medium text-green-500 ml-2">Pass</span></p>

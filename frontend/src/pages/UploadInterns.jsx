@@ -197,7 +197,7 @@ const UploadInterns = () => {
               <div className="bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6 md:p-8">
                 <div 
                   className={`
-                    w-full min-h-[300px] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-8 transition-all cursor-pointer bg-white dark:bg-slate-800/50
+                    w-full min-h-[240px] sm:min-h-[300px] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-6 sm:p-8 transition-all cursor-pointer bg-white dark:bg-slate-800/50
                     ${isDragOver 
                       ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 shadow-inner' 
                       : 'border-slate-300 dark:border-slate-600 hover:border-sky-400 dark:hover:border-sky-500'}
@@ -239,24 +239,26 @@ const UploadInterns = () => {
                   >
                     <h4 className="font-bold text-sm uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-4 px-2">Data Preview</h4>
                     <div className="bg-white dark:bg-slate-800/80 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/50 shadow-sm">
-                      <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-100/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300">
-                          <tr>
-                            <th className="py-4 px-6 font-bold uppercase text-xs">Name</th>
-                            <th className="py-4 px-6 font-bold uppercase text-xs">Email</th>
-                            <th className="py-4 px-6 font-bold uppercase text-xs">Domain</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                          {parsedData.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30">
-                              <td className="py-4 px-6 font-medium text-slate-800 dark:text-slate-200">{row.name}</td>
-                              <td className="py-4 px-6 text-slate-600 dark:text-slate-400">{row.email}</td>
-                              <td className="py-4 px-6 text-slate-600 dark:text-slate-400">{row.domain}</td>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm [&>tbody>tr]:hover:bg-slate-50/50 [&>tbody>tr]:dark:hover:bg-slate-700/30">
+                          <thead className="bg-slate-100/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300">
+                            <tr>
+                              <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Name</th>
+                              <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Email</th>
+                              <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Domain</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                            {parsedData.map((row, idx) => (
+                              <tr key={idx}>
+                                <td className="py-3 px-4 sm:px-6 font-medium text-slate-800 dark:text-slate-200">{row.name}</td>
+                                <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400">{row.email}</td>
+                                <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400">{row.domain}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </motion.div>
                 )}

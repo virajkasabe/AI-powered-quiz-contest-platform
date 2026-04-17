@@ -176,7 +176,7 @@ export default function Contact() {
                   Message sent!
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Thanks for reaching out. The Athenura team will get back to you
+                  Thanks for reaching out. The <img src="/logo-icon.svg" alt="Athenura" className="inline-block h-3 w-auto object-contain -mt-1 mr-1" /> team will get back to you
                   within 1–2 business days.
                 </p>
                 <button
@@ -198,8 +198,8 @@ export default function Contact() {
             <div className="flex flex-col gap-5 mb-6">
               <InfoBlock
                 label="Platform"
-                value="Athenura Quiz Gaming Software"
-                sub="Domain-Based Contest Platform for Interns"
+                value="Quiz Gaming Software"
+                sub="Domain-Based Contest Platform for Interns by <img src='/logo-icon.svg' className='inline h-3 w-auto object-contain align-middle' />"
               />
               <InfoBlock
                 label="Website"

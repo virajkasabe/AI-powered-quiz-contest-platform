@@ -80,7 +80,7 @@ const LeaderboardTable = () => {
       </div>
       
       <div className="overflow-x-auto flex-1">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse whitespace-nowrap">
           <thead>
             <tr className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
               <th className="px-5 py-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider w-16 text-center">Rank</th>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/Athenura.png";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const [user, setUser] = useState(null);
@@ -38,14 +39,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       )}
 
       {/* Sidebar - responsive transform */}
-      <div className={`fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out md:relative md:z-0 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* TOP */}
         <div className="flex-1 flex flex-col">
           {/* Logo & Close */}
-          <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
-            <div className="font-bold text-xl tracking-widest uppercase text-sky-600 dark:text-sky-400">
-              ATHENURA
-            </div>
+          <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+            <img src={logo} alt="Athenura Logo" className="h-10 md:h-12 w-auto object-contain dark:brightness-125" />
             <button 
               onClick={onClose} 
               className="md:hidden text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors"
@@ -57,10 +56,11 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* USER INFO */}
           {user  && (
             <div 
-              className="px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
+              onClick={() => { navigate('/intern/profile'); onClose(); }}
+              className="px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-700 dark:text-sky-400 font-semibold text-lg shadow-md">
+                <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-medium text-sm shadow-sm ring-2 ring-transparent dark:ring-slate-800">
                   {user.userName.charAt(0).toUpperCase()}
                 </div>
                 <div>

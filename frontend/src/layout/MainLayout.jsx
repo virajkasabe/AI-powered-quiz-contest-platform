@@ -14,8 +14,8 @@ const MainLayout = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
-        <main className="flex-1 overflow-y-auto">
-           <div className="p-5 sm:p-6 md:p-8 lg:p-10 max-w-7xl mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-3xl shadow-sm dark:shadow-slate-900/20 border border-sky-100/50 dark:border-slate-700/50 mx-3 sm:mx-6 lg:mx-auto">
+        <main className="flex-1 overflow-y-auto relative">
+           <div className="p-4 sm:p-6 md:p-8 lg:p-10 max-w-7xl w-full mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm dark:shadow-slate-900/20 border border-sky-100/50 dark:border-slate-700/50 rounded-2xl md:rounded-3xl mt-4 sm:mt-6 md:mt-8 mb-8 sm:mx-4 md:mx-6 lg:mx-auto">
              <Outlet />
            </div>
         </main>
