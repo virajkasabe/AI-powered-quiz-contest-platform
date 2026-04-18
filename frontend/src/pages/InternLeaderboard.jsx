@@ -197,22 +197,22 @@ const InternLeaderboard = () => {
       {/* POPUP MODAL */}
       <AnimatePresence>
         {selectedIntern && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed top-[80px] md:left-[256px] inset-x-0 bottom-0 z-[30] flex items-center justify-center p-4 sm:p-6 pb-[10vh] overflow-y-auto">
              {/* Backdrop */}
              <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedIntern(null)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm"
             />
             
             {/* Context Module */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm sm:max-w-md md:max-w-lg xl:max-w-2xl bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[95vh] overflow-y-auto"
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-sm sm:max-w-md md:max-w-lg xl:max-w-2xl bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[85vh] overflow-y-auto"
             >
                <div className="h-20 sm:h-24 bg-gradient-to-r from-sky-500 to-indigo-600 relative shrink-0">
                   <button 
