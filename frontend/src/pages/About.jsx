@@ -23,7 +23,7 @@ export default function About() {
         <div className="absolute top-[-40px] left-[-40px] w-56 h-56
           rounded-full bg-brand-600/20" />
         <div className="relative z-10 animate-fade-up anim-fill">
-          <SectionTag light>About Athenura</SectionTag>
+          <SectionTag light>About <img src="/logo-icon.svg" alt="Athenura" className="inline-block h-3 w-auto object-contain -mt-1 mr-1 align-middle" /></SectionTag>
           <h1 className="font-syne font-extrabold text-[clamp(32px,5vw,56px)]
             text-white leading-tight mb-4">
             Code. Create.

@@ -13,6 +13,7 @@ import AdminLoginPage from './pages/Adminloginpage';
 import QuizPage from './pages/QuizPage';
 import CreateContest from './pages/CreateContest';
 import MainLayout from './layout/MainLayout';
+import PublicLayout from './layout/PublicLayout';
 import NotFound from './pages/NotFound';
 import ReviewQuiz from './pages/ReviewQuiz';
 import AllContests from './pages/AllContests';
@@ -32,9 +33,11 @@ function AppRoutes() {
   return (
     <div className="app-container">
       <Routes>
-        <Route path='/' element={<Home onLogin={() => navigate('/login')} />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/contact' element={<Contact />} />
+        <Route element={<PublicLayout />}>
+          <Route path='/' element={<Home />} />
+          <Route path='/about' element={<About />} />
+          <Route path='/contact' element={<Contact />} />
+        </Route>
         <Route path='/login' element={<LoginPage onLogin={() => navigate('/intern')} onAdminClick={() => navigate('/admin-login')} />} />
 
         <Route path='/admin-login' element={<AdminLoginPage onLogin={() => navigate('/reports')} onBackClick={() => navigate('/')} />} />
@@ -51,7 +54,7 @@ function AppRoutes() {
           <Route path="/intern" element={<InternDashboard />} />
           <Route path="/my-quizzes" element={<MyQuizzes />} />
           <Route path="/upcoming" element={<UpcomingQuiz />} />
-          <Route path='/profile' element={<ProfilePage />} />
+          <Route path='/intern/profile' element={<ProfilePage />} />
 <Route path="/create-contest" element={<CreateContest />} />
           <Route path="/contests" element={<AllContests />} />
           <Route path="/review-question" element={<ReviewQuestion />} />

@@ -114,12 +114,7 @@ export default function AdminLoginPage({ onLogin, onBackClick }) {
 
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/25 border border-white/40 flex items-center justify-center backdrop-blur-sm flex-shrink-0">
-                <ShieldIcon />
-              </div>
-              <span className="font-bold text-xl md:text-2xl text-white tracking-tight" style={{ fontFamily:"'Outfit',sans-serif" }}>
-                Athen<span className="text-sky-200">ura</span>
-              </span>
+              <img src="/logo.svg" alt="Athenura" className="h-10 md:h-11 w-auto object-contain flex-shrink-0 rounded-xl shadow-lg bg-white/30 border border-white/40 backdrop-blur-sm p-1 md:p-1.5" />
             </div>
             <p className="text-[10px] text-white/70 tracking-[0.13em] font-semibold pl-[48px]">ADMIN PORTAL</p>
           </div>
@@ -226,7 +221,7 @@ export default function AdminLoginPage({ onLogin, onBackClick }) {
           </div>
 
           <p className="mt-4 text-center text-[11px] text-slate-300">
-            Secured by <span className="text-sky-500 font-semibold">Athenura</span> · Admin access only · v2.0
+            Secured by <img src="/logo-icon.svg" alt="Athenura" className="inline-block h-4 w-auto object-contain mr-1 align-middle -mt-0.5" /> · Admin access only · v2.0
           </p>
         </div>
       </div>

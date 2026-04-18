@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/Athenura.png";
 
 
 const ShieldIcon = () => (
@@ -135,16 +136,12 @@ export default function LoginPage({ onLogin, onAdminClick }) {
           </svg>
 
           {/* Logo */}
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/25 border border-white/40 flex items-center justify-center backdrop-blur-sm flex-shrink-0">
-                <ShieldIcon />
-              </div>
-              <span className="font-bold text-xl md:text-2xl text-white tracking-tight" style={{ fontFamily: "'Outfit',sans-serif" }}>
-                Athen<span className="text-sky-100">ura</span>
-              </span>
-            </div>
-            <p className="text-[10px] text-white/70 tracking-[0.13em] font-semibold pl-[48px]">CODE · CREATE · INNOVATE</p>
+          <div className="relative z-10 mb-6 flex items-center">
+            <img 
+              src={logo} 
+              alt="Athenura Logo" 
+              className="h-10 md:h-12 w-auto object-contain" 
+            />
           </div>
 
           {/* Illustration md+ */}
@@ -255,7 +252,7 @@ export default function LoginPage({ onLogin, onAdminClick }) {
           </button>
 
           <p className="mt-5 text-center text-[11px] text-slate-300 border-t border-slate-100 pt-3">
-            Secured by <span className="text-sky-500 font-semibold">Athenura</span> · Domain-based AI quiz platform · v2.0
+            Secured by Athenura · Domain-based AI quiz platform · v2.0
           </p>
         </div>
       </div>

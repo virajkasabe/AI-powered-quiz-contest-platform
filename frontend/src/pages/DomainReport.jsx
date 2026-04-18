@@ -38,7 +38,7 @@ export default function DomainReport() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide text-slate-900 dark:text-white">
-          ⚡ Athenura Leaderboard
+          ⚡ <img src="/logo-icon.svg" alt="Athenura" className="inline h-8 w-auto object-contain" /> Leaderboard
         </h1>
 
         <div className="flex gap-3">

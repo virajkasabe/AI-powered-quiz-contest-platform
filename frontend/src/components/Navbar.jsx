@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import logoDark from "../assets/Athenura.png";
+import logoLight from "../assets/Athenura.png"; // TODO: Add Athenura-light.png to this folder
 
 export default function Navbar({ onLogin }) {
   const [scrolled, setScrolled] = useState(false);
@@ -23,43 +25,48 @@ export default function Navbar({ onLogin }) {
     { to: "/contact", label: "Contact" },
   ];
 
+  const whiteHeaderRoutes = ["/", "/about", "/contact", "/login", "/register"];
+  const isWhiteHeader = whiteHeaderRoutes.includes(location.pathname);
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between
-        px-6 md:px-[6%] h-[68px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl
-        border-b border-sky-100 dark:border-slate-800 transition-all duration-300
-        ${scrolled ? "shadow-[0_4px_24px_rgba(2,132,199,0.1)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]" : ""}`}
+      className={`sticky top-0 z-50 flex items-center justify-between
+        px-6 md:px-10 lg:px-14 h-20 transition-all duration-300 border-b
+        ${isWhiteHeader 
+          ? "bg-white text-gray-800 border-gray-100 shadow-sm" 
+          : "bg-slate-900 text-white border-slate-800 shadow-md"}`}
     >
       {/* ── Logo ── */}
-      <Link to="/" className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-700 to-sky-400
-          flex items-center justify-center shadow-[0_4px_12px_rgba(2,132,199,0.35)]
-          hover:scale-105 transition-transform flex-shrink-0">
-          <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <span className="font-syne font-extrabold text-[19px] text-sky-800 dark:text-sky-400 tracking-tight">
-          Athenura
-        </span>
+      <Link to="/" className="flex items-center">
+        <img 
+          src={isWhiteHeader ? logoDark : logoLight} 
+          alt="Athenura Logo" 
+          className="h-12 md:h-14 w-auto object-contain" 
+        />
       </Link>
 
       {/* ── Desktop Links ── */}
-      <ul className="hidden md:flex gap-8 list-none">
+      <ul className="hidden md:flex flex-1 justify-center items-center gap-8 list-none">
         {links.map(({ to, label }) => {
           const active = location.pathname === to;
+          
+          let linkClass = `relative text-sm font-medium pb-1 transition-colors
+            after:absolute after:bottom-0 after:left-0 after:h-[2px]
+            after:rounded-full after:transition-all `;
+            
+          if (isWhiteHeader) {
+            linkClass += active 
+              ? "text-blue-600 after:w-full after:bg-blue-600" 
+              : "text-gray-700 hover:text-blue-600 after:w-0 after:bg-blue-600 hover:after:w-full";
+          } else {
+            linkClass += active 
+              ? "text-white after:w-full after:bg-sky-400" 
+              : "text-gray-300 hover:text-white after:w-0 after:bg-sky-400 hover:after:w-full";
+          }
+
           return (
             <li key={to}>
-              <Link
-                to={to}
-                className={`relative text-sm font-medium pb-1 transition-colors
-                  after:absolute after:bottom-0 after:left-0 after:h-[2px]
-                  after:rounded-full after:bg-sky-500 after:transition-all
-                  ${active
-                    ? "text-sky-600 dark:text-sky-400 after:w-full"
-                    : "text-gray-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 after:w-0 hover:after:w-full"
-                  }`}
-              >
+              <Link to={to} className={linkClass}>
                 {label}
               </Link>
             </li>
@@ -69,14 +76,6 @@ export default function Navbar({ onLogin }) {
 
       {/* ── Desktop Buttons ── */}
       <div className="hidden md:flex items-center gap-2.5">
-        <button
-          onClick={onLogin}
-          className="bg-transparent text-sky-700 dark:text-sky-400 border border-sky-300 dark:border-sky-800 px-5 py-2
-            rounded-full text-sm font-medium hover:bg-sky-50 dark:hover:bg-sky-900/50 hover:border-sky-500
-            transition-all cursor-pointer"
-        >
-          Login
-        </button>
         <Link
           to="/contact"
           className="bg-gradient-to-r from-brand-700 to-sky-500 text-white
@@ -94,39 +93,40 @@ export default function Navbar({ onLogin }) {
         className="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer border-none bg-transparent"
         aria-label="Toggle menu"
       >
-        <span className={`w-6 h-0.5 bg-gray-700 dark:bg-slate-400 rounded transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-        <span className={`w-6 h-0.5 bg-gray-700 dark:bg-slate-400 rounded transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-        <span className={`w-6 h-0.5 bg-gray-700 dark:bg-slate-400 rounded transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        <span className={`w-6 h-0.5 rounded transition-all duration-300 ${isWhiteHeader ? "bg-gray-800" : "bg-slate-400"} ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+        <span className={`w-6 h-0.5 rounded transition-all duration-300 ${isWhiteHeader ? "bg-gray-800" : "bg-slate-400"} ${menuOpen ? "opacity-0" : ""}`} />
+        <span className={`w-6 h-0.5 rounded transition-all duration-300 ${isWhiteHeader ? "bg-gray-800" : "bg-slate-400"} ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
       </button>
 
       {/* ── Mobile Menu ── */}
       {menuOpen && (
-        <div className="animate-slide-down absolute top-[68px] left-0 right-0 bg-white dark:bg-slate-900
-          border-b border-sky-100 dark:border-slate-800 shadow-lg px-6 py-4 flex flex-col gap-3 md:hidden">
+        <div className={`animate-slide-down absolute top-20 left-0 right-0 border-b shadow-lg px-6 py-4 flex flex-col gap-3 md:hidden
+          ${isWhiteHeader ? "bg-white border-gray-100" : "bg-slate-900 border-slate-800"}`}
+        >
           {links.map(({ to, label }) => {
             const active = location.pathname === to;
+            
+            let mobileLinkClass = `text-sm font-medium py-2 border-b `;
+            if (isWhiteHeader) {
+              mobileLinkClass += active ? "text-blue-600 border-gray-100" : "text-gray-700 border-gray-100";
+            } else {
+              mobileLinkClass += active ? "text-white border-slate-800" : "text-gray-300 border-slate-800";
+            }
+
             return (
               <Link
                 key={to}
                 to={to}
-                className={`text-sm font-medium py-2 border-b border-sky-50 dark:border-slate-800
-                  ${active ? "text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-slate-400"}`}
+                className={mobileLinkClass}
               >
                 {label}
               </Link>
             );
           })}
           <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => { setMenuOpen(false); onLogin(); }}
-              className="flex-1 border border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-400 py-2.5
-                rounded-full text-sm font-medium bg-transparent cursor-pointer"
-            >
-              Login
-            </button>
             <Link
               to="/contact"
-              className="flex-1 bg-brand-700 text-white py-2.5
+              className="w-full bg-gradient-to-r from-brand-700 to-sky-500 text-white py-2.5
                 rounded-full text-sm font-medium text-center"
             >
               Get Started

@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {/* Brand */}
         <div>
-          <div className="font-syne font-extrabold text-xl text-white mb-3">Athenura</div>
+          <img src="/logo.svg" alt="Athenura" className="h-8 w-auto object-contain mb-3" />
           <p className="text-sm leading-7 text-sky-300">
             Code. Create. Innovate.
             <br />
@@ -50,7 +50,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-sky-200/10 pt-5 text-center text-sm text-sky-400">
-        © 2026 Athenura. All rights reserved. | www.athenura.in
+        © 2026 <img src="/logo-icon.svg" alt="Athenura" className="inline-block h-4 w-auto object-contain align-middle" />. All rights reserved. | www.athenura.in
       </div>
     </footer>
   );
