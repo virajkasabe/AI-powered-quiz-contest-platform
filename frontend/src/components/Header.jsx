@@ -48,7 +48,7 @@ const Header = ({ onMenuClick }) => {
   }
 
   return (
-<header className="h-20 shadow-sm border-b border-sky-200/50 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 z-10 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-colors duration-300">
+    <header className="h-20 shadow-sm border-b border-sky-200/50 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 z-40 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center gap-4">
         {/* Mobile Toggle */}
         <button 
