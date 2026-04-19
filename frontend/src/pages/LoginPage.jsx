@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/Athenura.png";
+import { apiCall } from "../utils/api";
 
 
 const ShieldIcon = () => (
@@ -94,27 +95,27 @@ export default function LoginPage({ onLogin, onAdminClick }) {
 
     setToast({ msg: "Logging in...", type: "ok" });
 
-    // Mock role-based response (replace with real API)
-    const mockUser = {
-      userName: internId,
-      domain: 'Frontend', // or based on ID
-      role: 'intern'
-    };
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('token', 'mock-intern-token');
+    try {
+      const data = await apiCall("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ uniqueId: internId, joiningDate: internDate }),
+      });
 
-    setTimeout(() => {
       setToast({ msg: "Welcome back! Redirecting...", type: "ok" });
-      // Role-based redirect
-      const role = mockUser.role;
-      if (role === 'intern' || role === 'student') {
-        navigate('/intern');
-      } else if (role === 'professor') {
-        navigate('/professor/dashboard');
-      } else {
-        navigate('/');
-      }
-    }, 1200);
+      
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+
+      setTimeout(() => {
+        if (data.user.role === 'intern') {
+          navigate('/intern');
+        } else {
+          navigate('/');
+        }
+      }, 1000);
+    } catch (err) {
+      setToast({ msg: err.message || "Login failed.", type: "err" });
+    }
   };
 
   return (
@@ -241,7 +242,7 @@ export default function LoginPage({ onLogin, onAdminClick }) {
 
           {/* Login as Admin button */}
           <button
-            onClick={() => onAdminClick && onAdminClick()}
+            onClick={() => navigate('/admin-login')}
             className="w-full h-[42px] flex items-center justify-center gap-2 bg-white border-[1.5px] border-sky-900 text-sky-900 hover:bg-sky-50 active:scale-[0.985] font-bold text-sm rounded-[11px] transition-all"
           >
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">

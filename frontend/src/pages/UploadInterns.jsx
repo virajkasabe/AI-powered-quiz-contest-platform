@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiCall } from '../utils/api';
 
 const UploadInterns = () => {
   const [activeView, setActiveView] = useState('options'); // 'options', 'bulk', 'single'
@@ -17,7 +18,8 @@ const UploadInterns = () => {
     name: '',
     email: '',
     domain: '',
-    contact: ''
+    uniqueId: '',
+    joiningDate: ''
   });
   const [isSavingSingle, setIsSavingSingle] = useState(false);
   const [singleSaveStatus, setSingleSaveStatus] = useState(null);
@@ -38,9 +40,9 @@ const UploadInterns = () => {
     setUploadStatus(null);
     setTimeout(() => {
       setParsedData([
-        { name: 'John Doe', email: 'john@example.com', domain: 'Frontend' },
-        { name: 'Jane Smith', email: 'jane@example.com', domain: 'Backend' },
-        { name: 'Michael Ray', email: 'michael@example.com', domain: 'Data Science' },
+        { name: 'John Doe', email: 'john@example.com', domain: 'Frontend', uniqueId: 'ATHENURA/25/1101', joiningDate: '2025-01-15' },
+        { name: 'Jane Smith', email: 'jane@example.com', domain: 'Backend', uniqueId: 'ATHENURA/25/1102', joiningDate: '2025-01-15' },
+        { name: 'Michael Ray', email: 'michael@example.com', domain: 'Data Science', uniqueId: 'ATHENURA/25/1103', joiningDate: '2025-01-15' },
       ]);
     }, 600);
   };
@@ -59,17 +61,31 @@ const UploadInterns = () => {
     }
   };
 
-  const handleImport = () => {
-    if (!file || parsedData.length === 0) return;
+  const handleImport = async () => {
+    if (!file) return;
     setIsUploading(true);
     setUploadStatus(null);
-    setTimeout(() => {
-      setIsUploading(false);
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      await apiCall("/admin/upload-interns", {
+        method: "POST",
+        body: formData,
+        headers: {} // apiCall will handle Auth, but we shouldn't set Content-Type for FormData
+      });
+
       setUploadStatus('success');
       setFile(null);
       setParsedData([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    }, 2000);
+    } catch (error) {
+      console.error("Bulk upload failed:", error);
+      alert(error.message || "Failed to upload file");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCancelBulk = () => {
@@ -85,15 +101,25 @@ const UploadInterns = () => {
     setSingleInternData({ ...singleInternData, [e.target.name]: e.target.value });
   };
 
-  const handleSaveSingle = (e) => {
+  const handleSaveSingle = async (e) => {
     e.preventDefault();
     setIsSavingSingle(true);
     setSingleSaveStatus(null);
-    setTimeout(() => {
-      setIsSavingSingle(false);
+    
+    try {
+      await apiCall("/admin/upload-single-intern", {
+        method: "POST",
+        body: JSON.stringify(singleInternData),
+      });
+
       setSingleSaveStatus('success');
-      setSingleInternData({ name: '', email: '', domain: '', contact: '' });
-    }, 1500);
+      setSingleInternData({ name: '', email: '', domain: '', uniqueId: '', joiningDate: '' });
+    } catch (error) {
+      console.error("Failed to add intern:", error);
+      alert(error.message || "Failed to add intern");
+    } finally {
+      setIsSavingSingle(false);
+    }
   };
 
   return (
@@ -246,6 +272,8 @@ const UploadInterns = () => {
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Name</th>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Email</th>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Domain</th>
+                              <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Unique ID</th>
+                              <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Date</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -253,7 +281,9 @@ const UploadInterns = () => {
                               <tr key={idx}>
                                 <td className="py-3 px-4 sm:px-6 font-medium text-slate-800 dark:text-slate-200">{row.name}</td>
                                 <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400">{row.email}</td>
-                                <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400">{row.domain}</td>
+                                <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400 text-xs">{row.domain}</td>
+                                <td className="py-3 px-4 sm:px-6 font-mono text-xs text-slate-500 dark:text-slate-400">{row.uniqueId}</td>
+                                <td className="py-3 px-4 sm:px-6 text-xs text-slate-500 dark:text-slate-400">{row.joiningDate}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -357,26 +387,52 @@ const UploadInterns = () => {
                       className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-slate-100 transition-all outline-none"
                     >
                       <option value="" disabled>Select a domain</option>
-                      <option value="Frontend">Frontend Development</option>
-                      <option value="Backend">Backend Development</option>
-                      <option value="Data Science">Data Science</option>
-                      <option value="UI/UX Design">UI/UX Design</option>
-                      <option value="DevOps">DevOps</option>
+                      <option value="DATA SCIENCE & ANALYTICS">DATA SCIENCE & ANALYTICS</option>
+                      <option value="HUMAN RESOURCES">HUMAN RESOURCES</option>
+                      <option value="APPLICATION DEVELOPMENT">APPLICATION DEVELOPMENT</option>
+                      <option value="SOCIAL MEDIA MANAGEMENT">SOCIAL MEDIA MANAGEMENT</option>
+                      <option value="GRAPHIC DESIGN">GRAPHIC DESIGN</option>
+                      <option value="DIGITAL MARKETING">DIGITAL MARKETING</option>
+                      <option value="VIDEO EDITING">VIDEO EDITING</option>
+                      <option value="FULL STACK DEVELOPMENT">FULL STACK DEVELOPMENT</option>
+                      <option value="MERN STACK DEVELOPMENT">MERN STACK DEVELOPMENT</option>
+                      <option value="CONTENT WRITING">CONTENT WRITING</option>
+                      <option value="CONTENT CREATOR">CONTENT CREATOR</option>
+                      <option value="UI/UX DESIGNING">UI/UX DESIGNING</option>
+                      <option value="FRONT-END DEVELOPER">FRONT-END DEVELOPER</option>
+                      <option value="BACK-END DEVELOPER">BACK-END DEVELOPER</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      Contact / Intern ID
-                    </label>
-                    <input 
-                      type="text" 
-                      name="contact"
-                      value={singleInternData.contact}
-                      onChange={handleSingleChange}
-                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-slate-100 transition-all outline-none"
-                      placeholder="e.g. +1 234 567 8900 or INT-1024"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Unique ID *
+                      </label>
+                      <input 
+                        type="text" 
+                        name="uniqueId"
+                        required
+                        value={singleInternData.uniqueId}
+                        onChange={handleSingleChange}
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-slate-100 transition-all outline-none"
+                        placeholder="e.g. ATHENURA/25/10115"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Joining Date *
+                      </label>
+                      <input 
+                        type="date" 
+                        name="joiningDate"
+                        required
+                        value={singleInternData.joiningDate}
+                        onChange={handleSingleChange}
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-slate-100 transition-all outline-none"
+                      />
+                    </div>
                   </div>
 
                   <div className="pt-6 border-t border-slate-200/50 dark:border-slate-700/50 flex flex-col sm:flex-row items-center justify-end gap-4">

@@ -19,13 +19,28 @@ export const Groq_questions = async (
         {
           role: "system",
           content:
-            "You are a technical quiz generator. Return ONLY a JSON object.",
+            "You are an expert technical interviewer and quiz generator. Your task is to provide high-quality, challenging multiple-choice questions. Return ONLY a valid JSON object, no introductory or concluding text.",
         },
         {
           role: "user",
-          content: `Generate exactly ${count} unique MCQs for the domain: ${domain}. 
-                    ${slicedList.length > 0 ? `Avoid these topics: ${slicedList.join(", ")}.` : ""}
-                    Format: {"questions": [{"question": "", "options": [], "correctAnswer": ""}]}`,
+          content: `Generate exactly ${count} unique, high-quality Multiple Choice Questions (MCQs) for a technical contest in the domain: ${domain}.
+                    
+                    Rules:
+                    1. Each question must have exactly 4 diverse options.
+                    2. Only one option must be correct.
+                    3. The difficulty should be balanced (Junior to Senior level).
+                    4. ${slicedList.length > 0 ? `DO NOT include questions similar to these existing ones: ${slicedList.join(", ")}.` : "Ensure all questions are unique and technically accurate."}
+                    
+                    Output Format:
+                    {
+                      "questions": [
+                        {
+                          "question": "Question text here?",
+                          "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                          "correctAnswer": "The exact string of the correct option"
+                        }
+                      ]
+                    }`,
         },
       ],
       model: "llama-3.1-8b-instant",

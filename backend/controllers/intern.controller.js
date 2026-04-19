@@ -1,12 +1,13 @@
 import Contest from "../models/contests.js";
 import Question from "../models/question.js";
-import Result from "../models/result.js";
+import Attempt from "../models/attempt.js";
 import Intern from "../models/intern.js";
 
 export const startQuiz = async (req, res) => {
   try {
     const { contestId } = req.body;
-    const internId = req.user._id;
+    const internObjectId = req.user._id;
+    const internUniqueId = req.user.uniqueId;
 
     if (!contestId) {
       return res.status(400).json({ message: "❌ contestId is required." });
@@ -30,8 +31,8 @@ export const startQuiz = async (req, res) => {
     }
 
     // 3. Check for Existing Submission
-    const existingResult = await Result.findOne({ internId, contestId });
-    if (existingResult) {
+    const existingAttempt = await Attempt.findOne({ internId: internUniqueId, contestId: contest._id });
+    if (existingAttempt && existingAttempt.isSubmitted) {
       return res.status(403).json({
         message:
           "❌ You have already submitted this quiz. Multiple attempts are not allowed.",
@@ -74,7 +75,7 @@ export const startQuiz = async (req, res) => {
 export const submitQuiz = async (req, res) => {
   try {
     const { contestId, domain, answers } = req.body;
-    const internId = req.user._id;
+    const internUniqueId = req.user.uniqueId;
     const Domain = domain.trim().toUpperCase();
 
     // 1. Check if Contest exists and is ACTIVE
@@ -117,15 +118,17 @@ export const submitQuiz = async (req, res) => {
       };
     });
 
-    // Save result
-    const result = await Result.create({
-      internId,
-      contestId,
+    // Save attempt
+    const attempt = await Attempt.create({
+      internId: internUniqueId,
+      contestId: contest._id,
       domain: Domain,
       score,
       totalQuestions: questions.length,
       timeTaken: req.body.timeTaken,
       answers: evaluatedAnswers,
+      isSubmitted: true,
+      endTime: now,
     });
 
     res.json({
@@ -168,19 +171,76 @@ export const getUpcomingQuizzes = async (req, res) => {
 };
 export const getInternHistory = async (req, res) => {
   try {
-    const internId = req.user._id;
+    const internUniqueId = req.user.uniqueId;
 
-    // Fetch all results for the logged-in intern
-    const history = await Result.find({ internId }).sort({ createdAt: -1 });
+    // Fetch all results for the logged-in intern from Attempt model
+    const history = await Attempt.find({ internId: internUniqueId, isSubmitted: true })
+      .populate("contestId", "contestTitle description")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      title: history.length > 0 ? history[0].contestTitle : "None",
-      description:
-        history.length > 0 ? history[0].description : "No upcoming quizzes.",
       count: history.length,
       history,
     });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error.", error: error.message });
+  }
+};
+
+export const getInternStats = async (req, res) => {
+  try {
+    const user = req.user;
+    const internUniqueId = user.uniqueId;
+
+    // 1. Get all attempts for this intern
+    const attempts = await Attempt.find({ internId: internUniqueId, isSubmitted: true });
+    const totalScore = attempts.reduce((sum, att) => sum + att.score, 0);
+    const recentAttempt = await Attempt.findOne({ internId: internUniqueId, isSubmitted: true })
+      .sort({ createdAt: -1 });
+
+    // 2. Calculate Rankings (Based on badges first, then total score)
+    // For performance in large systems, you'd cache this or use aggregation
+    const allInterns = await Intern.find({ status: "Active" }).select("uniqueId domain badgesEarned");
+    
+    // We need total scores for all interns to break ties in ranking
+    // This is expensive if there are thousands of interns, but works for now.
+    const internAttemptStats = await Attempt.aggregate([
+      { $match: { isSubmitted: true } },
+      { $group: { _id: "$internId", totalPoints: { $sum: "$score" } } }
+    ]);
+
+    const statsMap = {};
+    internAttemptStats.forEach(s => { statsMap[s._id] = s.totalPoints; });
+
+    const rankedInterns = allInterns.map(i => ({
+      uniqueId: i.uniqueId,
+      domain: i.domain,
+      badges: i.badgesEarned,
+      points: statsMap[i.uniqueId] || 0
+    })).sort((a, b) => b.badges - a.badges || b.points - a.points);
+
+    const overallRank = rankedInterns.findIndex(i => i.uniqueId === internUniqueId) + 1;
+    
+    const userDomainNormalized = user.domain.trim().toUpperCase();
+    const domainRanked = rankedInterns.filter(i => (i.domain || '').trim().toUpperCase() === userDomainNormalized);
+    const domainRank = domainRanked.findIndex(i => i.uniqueId === internUniqueId) + 1;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        name: user.name,
+        domain: user.domain,
+        overallRank: overallRank || "N/A",
+        totalInterns: allInterns.length,
+        domainRank: domainRank || "N/A",
+        domainInterns: domainRanked.length,
+        totalScore,
+        recentScore: recentAttempt ? Math.round((recentAttempt.score / recentAttempt.totalQuestions) * 100) : 0,
+        badgesEarned: user.badgesEarned
+      }
+    });
+
   } catch (error) {
     res.status(500).json({ message: "❌ Server error.", error: error.message });
   }

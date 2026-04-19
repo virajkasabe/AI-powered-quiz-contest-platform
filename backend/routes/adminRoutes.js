@@ -8,6 +8,8 @@ import {
   updateInternStatus,
   singleIntern,
   replaceQuestion,
+  getAllContests,
+  getAllAttempts,
 } from "../controllers/admin.controllers.js";
 
 import { protectRoute } from "../middlewares/authMiddleware.js";
@@ -26,6 +28,8 @@ router.post("/upload-single-intern", singleIntern);
 router.post("/create-contest", createContest);
 
 router.get("/all-interns", allInterns);
+router.get("/all-contests", getAllContests);
+router.get("/all-attempts", getAllAttempts);
 
 router.get("/get-questions/:contestId", getContestQuestions);
 

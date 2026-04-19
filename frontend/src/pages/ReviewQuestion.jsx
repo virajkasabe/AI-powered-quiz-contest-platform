@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 const ReviewQuestion = () => {
   const navigate = useNavigate();
@@ -11,34 +12,34 @@ const ReviewQuestion = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching generated or uploaded questions for this contest
     const fetchQuestions = async () => {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setQuestions([
-        { 
-          id: 1, 
-          text: "What is the primary advantage of using React's Virtual DOM?", 
-          options: ["It makes direct API calls faster", "It optimizes rendering by updating only changed elements", "It is required for routing in React", "It replaces the need for a backend"], 
-          correct: "It optimizes rendering by updating only changed elements" 
-        },
-        { 
-          id: 2, 
-          text: "Which hook is used to handle side effects in a functional component?", 
-          options: ["useState", "useContext", "useEffect", "useReducer"], 
-          correct: "useEffect" 
-        },
-        { 
-          id: 3, 
-          text: "What does Tailwind CSS mainly provide?", 
-          options: ["Full built-in components", "Utility-first css classes", "State management", "Routing"], 
-          correct: "Utility-first css classes" 
+      if (!location.state?.newContest?.contestId) {
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const response = await apiCall(`/admin/get-questions/${location.state.newContest.contestId}`);
+        if (response.success && response.data) {
+          // Map backend fields to frontend format
+          const formattedQuestions = response.data.map(q => ({
+            id: q._id,
+            text: q.questionText,
+            options: q.options,
+            correct: q.correctAnswer
+          }));
+          setQuestions(formattedQuestions);
         }
-      ]);
-      setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch questions:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchQuestions();
-  }, []);
+  }, [location.state]);
 
   const handlePublish = () => {
     // Navigate back to all contests after publishing

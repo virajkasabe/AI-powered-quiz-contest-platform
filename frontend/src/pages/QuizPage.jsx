@@ -1,31 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { apiCall } from "../utils/api";
 
-const QUESTIONS = [
-  { q: "What does HTML stand for?", opts: ["HyperText Markup Language", "HighText Machine Language", "Hyper Transfer Markup Language", "HyperText Machine Link"], ans: 0 },
-  { q: "Which CSS property is used to change the text color of an element?", opts: ["font-color", "text-color", "color", "foreground-color"], ans: 2 },
-  { q: "Which HTML tag is used to define an internal style sheet?", opts: ["<css>", "<script>", "<style>", "<link>"], ans: 2 },
-  { q: "What does CSS stand for?", opts: ["Creative Style Sheets", "Cascading Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"], ans: 1 },
-  { q: "Which HTML attribute is used to define inline styles?", opts: ["class", "font", "styles", "style"], ans: 3 },
-  { q: "Which property is used to set the background color in CSS?", opts: ["bgcolor", "color", "background-color", "background"], ans: 2 },
-  { q: "Which tag is used to create a hyperlink in HTML?", opts: ["<link>", "<a>", "<href>", "<url>"], ans: 1 },
-  { q: "In JavaScript, which operator compares both value and type?", opts: ["==", "!=", "===", "="], ans: 2 },
-  { q: "Which CSS property controls the size of text?", opts: ["text-size", "font-size", "text-style", "font-style"], ans: 1 },
-  { q: "What is the correct syntax to refer to an external script called 'app.js'?", opts: ["<script href='app.js'>", "<script name='app.js'>", "<script src='app.js'>", "<script file='app.js'>"], ans: 2 },
-  { q: "Which HTML element is used to display a scalar measurement within a known range?", opts: ["<gauge>", "<meter>", "<progress>", "<range>"], ans: 1 },
-  { q: "Which CSS unit is relative to the font-size of the root element?", opts: ["em", "rem", "px", "%"], ans: 1 },
-  { q: "What does the 'z-index' CSS property control?", opts: ["Zoom level", "Horizontal position", "Vertical position", "Stack order"], ans: 3 },
-  { q: "Which method is used to add an element at the end of an array in JavaScript?", opts: ["push()", "pop()", "shift()", "append()"], ans: 0 },
-  { q: "What is the default display value of a <div> element?", opts: ["inline", "block", "inline-block", "flex"], ans: 1 },
-  { q: "Which CSS property is used to make a flex container?", opts: ["display:flex", "flex:1", "position:flex", "layout:flex"], ans: 0 },
-  { q: "What does the 'alt' attribute in an <img> tag provide?", opts: ["Image title", "Alternative text", "Image size", "Image link"], ans: 1 },
-  { q: "Which JavaScript method selects an element by its ID?", opts: ["querySelector()", "getElement()", "getElementById()", "findById()"], ans: 2 },
-  { q: "What is the correct way to write a comment in CSS?", opts: ["// comment", "/* comment */", "<!-- comment -->", "# comment"], ans: 1 },
-  { q: "Which HTML tag defines the largest heading?", opts: ["<h6>", "<heading>", "<h1>", "<head>"], ans: 2 },
-];
-
-const TOTAL = QUESTIONS.length;
-const TOTAL_SECONDS = 20 * 60;
 const LABELS = ["A", "B", "C", "D"];
 
 function formatTime(sec) {
@@ -42,9 +18,9 @@ function getResultMsg(pct) {
 }
 
 // ── Submit Confirmation Modal ──────────────────────────────────────────────────
-function SubmitModal({ answers, marked, onConfirm, onCancel }) {
+function SubmitModal({ answers, totalQuestions, marked, onConfirm, onCancel }) {
   const attempted = answers.filter((a) => a !== null).length;
-  const notAttempted = TOTAL - attempted;
+  const notAttempted = totalQuestions - attempted;
   const markedCount = marked.filter(Boolean).length;
 
   return (
@@ -124,30 +100,69 @@ function SubmitModal({ answers, marked, onConfirm, onCancel }) {
 // ── Main QuizPage ──────────────────────────────────────────────────────────────
 export default function QuizPage() {
   const navigate = useNavigate();
+  const { id: contestId } = useParams();
+  
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState(new Array(TOTAL).fill(null));
-  const [marked, setMarked] = useState(new Array(TOTAL).fill(false)); // marked for review
-  const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
+  const [questions, setQuestions] = useState([]);
+  const [contestDetails, setContestDetails] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [marked, setMarked] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [timeTaken, setTimeTaken] = useState(0);
-  const startTimeRef = useRef(Date.now());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [scoreData, setScoreData] = useState(null);
+  
+  const startTimeRef = useRef(null);
+  const [user, setUser] = useState(null);
 
-  const internName = "Ayush Kumar";
-  const internDomain = "Frontend";
-  const internId = "ATHENURA/25/10115";
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+    fetchQuiz();
+  }, [contestId]);
+
+  const fetchQuiz = async () => {
+    try {
+      setLoading(true);
+      const response = await apiCall("/quiz/start-quiz", {
+        method: "POST",
+        body: JSON.stringify({ contestId })
+      });
+
+      if (response.success) {
+        const { contestDetails, questions } = response.data;
+        setContestDetails(contestDetails);
+        setQuestions(questions);
+        setAnswers(new Array(questions.length).fill(null));
+        setMarked(new Array(questions.length).fill(false));
+        setTimeLeft(contestDetails.duration * 60);
+        startTimeRef.current = Date.now();
+      }
+    } catch (err) {
+      setError(err.message || "Failed to load quiz.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ── Timer ────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (submitted) return;
+    if (submitted || !timeLeft) return;
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) { clearInterval(interval); confirmSubmit(); return 0; }
+        if (prev <= 1) { 
+          clearInterval(interval); 
+          confirmSubmit(); 
+          return 0; 
+        }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [submitted]);
+  }, [submitted, timeLeft]);
 
   // ── Select answer ────────────────────────────────────────────────────────────
   const selectAnswer = (optIndex) => {
@@ -167,18 +182,65 @@ export default function QuizPage() {
 
   // ── Navigate ─────────────────────────────────────────────────────────────────
   const goTo = (index) => {
-    if (index < 0 || index >= TOTAL) return;
+    if (index < 0 || index >= questions.length) return;
     setCurrent(index);
   };
 
   // ── Confirm submit ───────────────────────────────────────────────────────────
-  const confirmSubmit = () => {
+  const confirmSubmit = async () => {
+    if (submitted) return;
     const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
     setTimeTaken(elapsed);
-    setSubmitted(true);
-    setShowModal(false);
-    // TODO: POST to /api/quiz/submit → { internId, answers, timeTaken: elapsed }
+    
+    // Map answers to the format expected by backend
+    const submissionAnswers = questions.map((q, i) => ({
+      questionId: q._id,
+      selectedAnswer: answers[i]
+    }));
+
+    try {
+      const response = await apiCall("/quiz/submit", {
+        method: "POST",
+        body: JSON.stringify({
+          contestId: contestId,
+          domain: contestDetails.domain,
+          answers: submissionAnswers,
+          timeTaken: `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`
+        })
+      });
+
+      if (response.success) {
+        setScoreData({
+          score: response.score,
+          total: response.total
+        });
+        setSubmitted(true);
+        setShowModal(false);
+      }
+    } catch (err) {
+      alert("Submission failed: " + err.message);
+    }
   };
+
+  const TOTAL = questions.length;
+  
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+      <div className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Initializing Secure Quiz Session...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+      <div className="text-6xl mb-6">🚫</div>
+      <h2 className="text-2xl font-black text-slate-800 mb-2">Access Denied</h2>
+      <p className="text-slate-500 max-w-md mb-8">{error}</p>
+      <button onClick={() => navigate('/upcoming')} className="px-8 py-3 bg-sky-500 text-white font-bold rounded-xl shadow-lg hover:bg-sky-600 transition-all">
+        Back to Upcoming Quizzes
+      </button>
+    </div>
+  );
 
   // ── Stats ────────────────────────────────────────────────────────────────────
   const answeredCount = answers.filter((a) => a !== null).length;
@@ -188,9 +250,9 @@ export default function QuizPage() {
   const isLastQuestionAnswered = answers[TOTAL - 1] !== null;
 
   // ── Result ───────────────────────────────────────────────────────────────────
-  const correctCount = answers.filter((a, i) => a === QUESTIONS[i].ans).length;
-  const wrongCount = answers.filter((a, i) => a !== null && a !== QUESTIONS[i].ans).length;
-  const scorePct = Math.round((correctCount / TOTAL) * 100);
+  const correctCount = scoreData ? scoreData.score : 0;
+  const wrongCount = TOTAL - correctCount - (TOTAL - answeredCount);
+  const scorePct = TOTAL > 0 ? Math.round((correctCount / TOTAL) * 100) : 0;
   const resultMsg = getResultMsg(scorePct);
 
   // ── Timer color ──────────────────────────────────────────────────────────────
@@ -203,18 +265,18 @@ export default function QuizPage() {
   const getDotClass = (i) => {
     if (i === current) return "bg-sky-500 border-sky-500 text-white";
     if (marked[i]) return "bg-purple-400 border-purple-400 text-white";
-    if (answers[i] !== null) return "bg-green-500 border-green-500 text-white";  // answered = GREEN
-    if (i < current) return "bg-red-400 border-red-400 text-white";               // visited but not answered = RED
-    return "bg-white border-sky-200 text-slate-500";                               // not yet visited
+    if (answers[i] !== null) return "bg-green-500 border-green-500 text-white";
+    if (i < current) return "bg-red-400 border-red-400 text-white";
+    return "bg-white border-sky-200 text-slate-500";
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 to-slate-50">
 
-      {/* Submit Modal */}
       {showModal && (
         <SubmitModal
           answers={answers}
+          totalQuestions={TOTAL}
           marked={marked}
           onConfirm={confirmSubmit}
           onCancel={() => setShowModal(false)}
@@ -237,13 +299,13 @@ export default function QuizPage() {
             <span className="font-bold text-sm text-white" style={{ fontFamily: "'Outfit',sans-serif" }}>
               Athen<span className="text-sky-100">ura</span> Quiz
             </span>
-            <p className="text-[10px] text-white/70 hidden sm:block">{internName} · {internId}</p>
+            <p className="text-[10px] text-white/70 hidden sm:block">{user?.name} · {user?.uniqueId}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="hidden sm:block bg-white/20 border border-white/35 rounded-full px-3 py-0.5 text-xs font-semibold text-white">
-            {internDomain}
+            {contestDetails?.domain}
           </span>
           <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${timerClass}`}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -265,7 +327,6 @@ export default function QuizPage() {
 
         {!submitted ? (
           <>
-            {/* Stats row */}
             <div className="grid grid-cols-4 gap-2 mb-4">
               {[
                 { label: "Total", val: TOTAL, color: "text-sky-900" },
@@ -280,7 +341,6 @@ export default function QuizPage() {
               ))}
             </div>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-2 mb-3">
               {[
                 { color: "bg-sky-500", label: "Current" },
@@ -296,9 +356,8 @@ export default function QuizPage() {
               ))}
             </div>
 
-            {/* Question dots */}
             <div className="flex flex-wrap gap-1.5 mb-4">
-              {QUESTIONS.map((_, i) => (
+              {questions.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => goTo(i)}
@@ -309,14 +368,12 @@ export default function QuizPage() {
               ))}
             </div>
 
-            {/* Question card */}
             <div className="bg-white rounded-3xl border border-sky-100/50 shadow-sm p-6 sm:p-8 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-lg">
                   Q {current + 1} / {TOTAL}
                 </span>
                 <div className="flex items-center gap-2">
-                  {/* Mark for Review button */}
                   <button
                     onClick={toggleMark}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all
@@ -332,18 +389,15 @@ export default function QuizPage() {
                     </svg>
                     {marked[current] ? "Marked" : "Mark for Review"}
                   </button>
-                  <span className="bg-sky-50 text-sky-700 text-xs font-semibold px-3 py-1 rounded-full border border-sky-200">
-                    {internDomain}
-                  </span>
                 </div>
               </div>
 
               <p className="text-sm sm:text-base font-semibold text-sky-900 leading-relaxed mb-5">
-                {QUESTIONS[current].q}
+                {questions[current]?.questionText}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {QUESTIONS[current].opts.map((opt, i) => {
+                {questions[current]?.options.map((opt, i) => {
                   const isSelected = answers[current] === i;
                   return (
                     <button
@@ -366,7 +420,6 @@ export default function QuizPage() {
               </div>
             </div>
 
-            {/* Navigation + Submit */}
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={() => goTo(current - 1)}
@@ -379,21 +432,15 @@ export default function QuizPage() {
                 Prev
               </button>
 
-              {/* Always visible Submit button */}
               <button
-  onClick={() => setShowModal(true)}
-  disabled={!isLastQuestionAnswered}
-  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all
-    ${isLastQuestionAnswered
-      ? "bg-sky-900 text-white hover:bg-sky-800"
-      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-    }`}
->
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-  Submit Quiz
-</button>
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-900 text-white text-sm font-bold hover:bg-sky-800 transition-all"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Submit Quiz
+              </button>
 
               {current < TOTAL - 1 ? (
                 <button
@@ -411,7 +458,6 @@ export default function QuizPage() {
             </div>
           </>
         ) : (
-          /* ── RESULT SCREEN ── */
           <div className="bg-white rounded-2xl border border-sky-100 p-6 sm:p-8 text-center">
             <div className="text-5xl mb-3">
               {scorePct >= 75 ? "🏆" : scorePct >= 55 ? "👍" : "💪"}
@@ -428,46 +474,13 @@ export default function QuizPage() {
                 { label: "Correct", val: correctCount, color: "text-green-600", bg: "bg-green-50 border-green-100" },
                 { label: "Wrong", val: wrongCount, color: "text-red-500", bg: "bg-red-50 border-red-100" },
                 { label: "Skipped", val: TOTAL - answeredCount, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
-                { label: "Time", val: `${timeTaken}s`, color: "text-sky-600", bg: "bg-sky-50 border-sky-100" },
+                { label: "Spent", val: `${Math.floor(timeTaken / 60)}m ${timeTaken % 60}s`, color: "text-sky-600", bg: "bg-sky-50 border-sky-100" },
               ].map((s) => (
                 <div key={s.label} className={`rounded-xl p-3 border ${s.bg}`}>
                   <div className={`text-xl font-bold ${s.color}`}>{s.val}</div>
                   <div className="text-[10px] text-slate-500 mt-1">{s.label}</div>
                 </div>
               ))}
-            </div>
-
-            {/* Answer Review */}
-            <div className="text-left">
-              <h3 className="text-sm font-bold text-sky-900 mb-3">Answer Review</h3>
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {QUESTIONS.map((q, i) => {
-                  const userAns = answers[i];
-                  const isCorrect = userAns === q.ans;
-                  return (
-                    <div
-                      key={i}
-                      className={`rounded-xl border p-3 text-xs ${
-                        isCorrect ? "bg-green-50 border-green-200"
-                        : userAns === null ? "bg-slate-50 border-slate-200"
-                        : "bg-red-50 border-red-200"
-                      }`}
-                    >
-                      <div className="font-semibold text-slate-700 mb-1">Q{i + 1}. {q.q}</div>
-                      <div className="flex flex-wrap gap-3">
-                        <span className={isCorrect ? "text-green-700 font-medium" : "text-red-600 font-medium"}>
-                          Your answer: {userAns !== null ? q.opts[userAns] : "Skipped"}
-                        </span>
-                        {!isCorrect && (
-                          <span className="text-green-700 font-medium">
-                            Correct: {q.opts[q.ans]}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
 
             <button

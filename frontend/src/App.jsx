@@ -26,6 +26,7 @@ import Register from './pages/Register';
 import MyQuizzes from './pages/MyQuizzes';
 import UpcomingQuiz from './pages/UpcomingQuiz';
 import InternLeaderboard from './pages/InternLeaderboard';
+import QuizLeaderboard from './pages/QuizLeaderboard';
 
 
 function AppRoutes() {
@@ -38,14 +39,11 @@ function AppRoutes() {
           <Route path='/about' element={<About />} />
           <Route path='/contact' element={<Contact />} />
         </Route>
-        <Route path='/login' element={<LoginPage onLogin={() => navigate('/intern')} onAdminClick={() => navigate('/admin-login')} />} />
-
-        <Route path='/admin-login' element={<AdminLoginPage onLogin={() => navigate('/reports')} onBackClick={() => navigate('/')} />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route path='/admin-login' element={<AdminLoginPage />} />
         <Route path='/register' element={<Register />} />
 
-        <Route path='/admin-login' element={<AdminLoginPage onLogin={() => navigate('/all-interns')} onBackClick={() => navigate('/')} />} />
-
-        <Route path='/quiz' element={<QuizPage />} />
+        <Route path='/quiz/:id' element={<QuizPage />} />
         
         <Route element={<MainLayout />} >
           <Route path="/leaderboard" element={<Leaderboard />} />
@@ -54,13 +52,17 @@ function AppRoutes() {
           <Route path="/intern" element={<InternDashboard />} />
           <Route path="/my-quizzes" element={<MyQuizzes />} />
           <Route path="/upcoming" element={<UpcomingQuiz />} />
-          <Route path='/intern/profile' element={<ProfilePage />} />
-<Route path="/create-contest" element={<CreateContest />} />
+          <Route path="/intern/profile" element={<ProfilePage />} />
+          <Route path="/quiz-leaderboard/:id" element={<QuizLeaderboard />} />
+          <Route path="/create-contest" element={<CreateContest />} />
           <Route path="/contests" element={<AllContests />} />
           <Route path="/review-question" element={<ReviewQuestion />} />
           <Route path="/review-quiz" element={<ReviewQuiz />} />
           <Route path="/all-interns" element={<AllInterns />} />
           <Route path="/upload-interns" element={<UploadInterns />} />
+          {/* Admin Dashboard Aliases to prevent 404s */}
+          <Route path="/admin-dashboard" element={<DomainReport />} />
+          <Route path="/admin/interns" element={<AllInterns />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

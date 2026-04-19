@@ -32,6 +32,10 @@ const internSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   }, // Used for "Intern of the Month" logic [cite: 64]
+  isInternOfTheMonth: {
+    type: Boolean,
+    default: false,
+  },
   role: {
     type: String,
     default: "intern",

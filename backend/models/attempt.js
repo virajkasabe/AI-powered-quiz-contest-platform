@@ -32,6 +32,17 @@ const attemptSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   }, // Ensures "One attempt per intern" [cite: 31, 72]
+  domain: {
+    type: String,
+  },
+  answers: [
+    {
+      questionId: mongoose.Schema.Types.ObjectId,
+      selectedAnswer: String,
+      isCorrect: Boolean,
+    },
+  ],
 });
 
 const Attempt = mongoose.model("Attempt", attemptSchema);
+export default Attempt;

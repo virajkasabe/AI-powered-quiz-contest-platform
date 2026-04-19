@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Question from "../models/question.js";
 import Intern from "../models/intern.js";
 import Contest from "../models/contests.js";
-import Result from "../models/result.js";
+import Attempt from "../models/attempt.js";
 import xlsx from "xlsx";
 import "dotenv/config";
 import { createContestID } from "../utils/createContestID.js";
@@ -34,7 +34,7 @@ export const uploadInterns = async (req, res) => {
             uniqueId: row.uniqueId,
             name: row.name,
             email: row.email,
-            domain: row.domain,
+            domain: row.domain ? row.domain.trim().toUpperCase() : "GENERAL",
             joiningDate: new Date(row.joiningDate),
             status: row.status || "Active",
           },
@@ -58,24 +58,29 @@ export const uploadInterns = async (req, res) => {
 export const createContest = async (req, res) => {
   try {
     let {
+      title,
       contestTitle,
       description,
       date,
       startTime,
       duration,
       domain,
+      totalQuestions,
       questionCount,
     } = req.body;
 
+    const finalTitle = title || contestTitle;
+    const finalQuestionCount = totalQuestions || questionCount;
+
     // ✅ Validate
     if (
-      !contestTitle ||
+      !finalTitle ||
       !description ||
       !date ||
       !startTime ||
       !duration ||
       !domain ||
-      !questionCount
+      !finalQuestionCount
     ) {
       return res.status(400).json({ message: "❌ All fields are required." });
     }
@@ -103,20 +108,17 @@ export const createContest = async (req, res) => {
     }
 
     //quiz questions gen
-
-    const existingQuestions = await Question.find({ Domain }).select(
-      "questionText -_id", // 👈 changed from "text" to "questionText"
+    const existingQuestions = await Question.find({ domain: Domain }).select(
+      "questionText -_id", 
     );
-    const forbiddenList = existingQuestions.map((q) => q.questionText); // 👈 changed from q.text
+    const forbiddenList = existingQuestions.map((q) => q.questionText);
 
     const questionsData = await Groq_questions.Groq_questions(
       Domain,
       forbiddenList,
-      questionCount,
+      finalQuestionCount,
     );
-    const filteredQuestions = questionsData.filter(
-      (q) => !forbiddenList.includes(q.question),
-    );
+    const filteredQuestions = questionsData.slice(0, finalQuestionCount);
 
     if (filteredQuestions.length === 0) {
       return res.status(400).json({
@@ -128,25 +130,24 @@ export const createContest = async (req, res) => {
     // 4. Save to MongoDB
     const savedQuestions = await Question.insertMany(
       filteredQuestions.map((q) => ({
-        questionText: q.question, // 👈 changed 'text' to 'questionText'
+        questionText: q.question, 
         options: q.options,
-        correctAnswer: q.correctAnswer, // 👈 changed 'answer' to 'correctAnswer'
+        correctAnswer: q.correctAnswer, 
         domain: Domain,
         contestId,
-        // Optional: you can remove 'difficulty' because it doesn't exist in your mongoose schema!
         createdAt: new Date(),
       })),
     );
     // ✅ Save PROPER STRUCTURE
     const contest = await Contest.create({
       contestId,
-      contestTitle,
+      contestTitle: finalTitle,
       description,
       date: new Date(date),
       startTime: startDateTime,
       expiryDate: expiryDateTime,
       domain: Domain,
-      questionCount,
+      questionCount: finalQuestionCount,
       duration,
     });
 
@@ -253,7 +254,7 @@ export const singleIntern = async (req, res) => {
       uniqueId,
       name,
       email,
-      domain,
+      domain: domain.trim().toUpperCase(),
       joiningDate: new Date(joiningDate),
     });
 
@@ -325,5 +326,49 @@ export const replaceQuestion = async (req, res) => {
       message: "❌ Server error during question replacement.",
       error: error.message,
     });
+  }
+};
+
+export const getAllContests = async (req, res) => {
+  try {
+    const contests = await Contest.find().sort({ date: -1 });
+    res.status(200).json({
+      success: true,
+      count: contests.length,
+      data: contests,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error.", error: error.message });
+  }
+};
+
+export const getAllAttempts = async (req, res) => {
+  try {
+    // Populate contest details
+    const attempts = await Attempt.find()
+      .populate('contestId', 'contestTitle description')
+      .sort({ endTime: -1 });
+
+    // Since internId is a string reference (uniqueId), let's optionally fetch intern names
+    const internIds = attempts.map(a => a.internId);
+    const interns = await Intern.find({ uniqueId: { $in: internIds } }).select('uniqueId name');
+    
+    const internMap = interns.reduce((acc, intern) => {
+      acc[intern.uniqueId] = intern.name;
+      return acc;
+    }, {});
+
+    const enrichedAttempts = attempts.map(attempt => ({
+      ...attempt._doc,
+      internName: internMap[attempt.internId] || 'Unknown Intern'
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: enrichedAttempts.length,
+      data: enrichedAttempts,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error.", error: error.message });
   }
 };

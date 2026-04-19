@@ -1,52 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiCall } from '../utils/api';
 
 const MyQuizzes = () => {
   const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
+    fetchHistory();
   }, []);
 
-  // Mock Data for Quiz History
-  const history = [
-    {
-      id: 1,
-      contestTitle: 'MERN Stack Fundamentals',
-      domain: 'FRONTEND',
-      score: 18,
-      totalQuestions: 20,
-      percentage: 90,
-      timeTaken: '12:45',
-      date: '2023-11-10',
-      description: 'Comprehensive test covering React hooks, Node.js streams, and MongoDB aggregations. This quiz focused on real-world performance optimization and state management patterns.',
-    },
-    {
-      id: 2,
-      contestTitle: 'Advanced React Hooks',
-      domain: 'FRONTEND',
-      score: 15,
-      totalQuestions: 20,
-      percentage: 75,
-      timeTaken: '18:20',
-      date: '2023-11-15',
-      description: 'In-depth evaluation of custom hooks, performance profiling with useMemo, and complex context architectures.',
-    },
-    {
-      id: 3,
-      contestTitle: 'Data Structures & Algorithms',
-      domain: 'BACKEND',
-      score: 14,
-      totalQuestions: 20,
-      percentage: 70,
-      timeTaken: '25:30',
-      date: '2023-11-05',
-      description: 'Evaluation of algorithmic thinking, complexity analysis, and implementation of common data structures like trees and graphs.',
-    },
-  ];
+  const fetchHistory = async () => {
+    try {
+      const data = await apiCall("/quiz/history");
+      // Map API data to frontend format
+      const formattedHistory = data.history.map(attempt => ({
+        id: attempt._id,
+        contestTitle: attempt.contestId?.contestTitle || 'Unknown Contest',
+        domain: attempt.domain,
+        score: attempt.score,
+        totalQuestions: attempt.totalQuestions,
+        percentage: Math.round((attempt.score / attempt.totalQuestions) * 100),
+        timeTaken: attempt.timeTaken || 'N/A',
+        date: new Date(attempt.endTime).toISOString().split('T')[0],
+        description: attempt.contestId?.description || 'No description available.',
+      }));
+      setHistory(formattedHistory);
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter by user's domain and search term
   const userDomain = user?.domain?.trim().toUpperCase() || 'FRONTEND';
@@ -163,7 +153,7 @@ const MyQuizzes = () => {
             ))
           ) : (
             <div className="col-span-full py-20 bg-slate-50 dark:bg-slate-900/30 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-700 text-center animate-pulse">
-               <p className="text-xl font-bold text-slate-400">No quizzes found for your domain or search criteria.</p>
+               <p className="text-xl font-bold text-slate-400">{loading ? 'Loading your results...' : 'No quizzes found for your domain or search criteria.'}</p>
             </div>
           )}
         </div>

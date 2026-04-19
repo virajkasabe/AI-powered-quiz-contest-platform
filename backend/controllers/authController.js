@@ -21,8 +21,8 @@ export const login = async (req, res) => {
 
     // ⛔ Check if account is active
     if (user.status === "Inactive") {
-      return res.status(403).json({ 
-        message: "❌ Your account is inactive. Please contact administration." 
+      return res.status(403).json({
+        message: "❌ Your account is inactive. Please contact administration.",
       });
     }
 
@@ -60,9 +60,14 @@ export const login = async (req, res) => {
 
 export const signinAdmin = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password)
-      return res.status(400).json({ message: "Enter your credentials" });
+    const { name, email, password, secretKey } = req.body;
+    if (!name || !email || !password || !secretKey)
+      return res.status(400).json({ message: "Enter all details" });
+
+    if (secretKey !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(403).json({ message: "❌ Invalid Secret Key" });
+    }
+
     const findUser = await Admin.findOne({ email });
     if (findUser)
       return res.status(400).json({ message: "Admin allready present." });
@@ -107,6 +112,7 @@ export const adminLogin = async (req, res) => {
       token,
       user: {
         id: admin._id,
+        userName: admin.name,
         email: admin.email,
         role: admin.role,
       },

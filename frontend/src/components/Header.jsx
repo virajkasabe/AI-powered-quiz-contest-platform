@@ -18,8 +18,10 @@ const Header = ({ onMenuClick }) => {
       try {
         setUserData(JSON.parse(storedUser));
       } catch (err) {}
+    } else {
+      setUserData(null);
     }
-  }, []);
+  }, [location]);
 
   const isIntern = userData?.role === 'intern' || userData?.role === 'student';
   

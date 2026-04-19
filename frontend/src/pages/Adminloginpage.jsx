@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import logo from "../assets/Athenura.png";
+import { apiCall } from "../utils/api";
 
 const ShieldIcon = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -34,7 +36,7 @@ const AdminIllustration = () => (
     })}
     <rect x="20" y="178" width="100" height="55" rx="9" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
     <text x="30" y="193" fontSize="8" fontWeight="700" fill="white" fontFamily="Plus Jakarta Sans,sans-serif">Domains</text>
-    {["Frontend","Backend","UI/UX","Data Sci"].map((d,i)=>(
+    {["MERN Stack", "Full Stack", "Data Science", "HR", "Digital Marketing", "UI/UX", "App Dev"].map((d,i)=>(
       <g key={d}>
         <rect x="30" y={197+i*8} width={40+i*8} height="5" rx="2.5" fill="rgba(255,255,255,0.35)" />
         <text x={74+i*8} y={201+i*8} fontSize="5" fill="rgba(255,255,255,0.5)" fontFamily="Plus Jakarta Sans,sans-serif">{d}</text>
@@ -71,30 +73,27 @@ export default function AdminLoginPage({ onLogin, onBackClick }) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setToast({ msg: "Please enter a valid email address.", type: "err" }); return; }
     if (!password || password.length < 6) { setToast({ msg: "Password must be at least 6 characters.", type: "err" }); return; }
 
-    setToast({ msg: "Logging in...", type: "ok" });
+    try {
+      const data = await apiCall("/auth/admin-login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-    // Mock role-based response (replace with real API)
-    const mockUser = {
-      userName: email,
-      role: 'admin'
-    };
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('token', 'mock-admin-token');
-
-    setTimeout(() => {
       setToast({ msg: "Welcome Admin! Redirecting...", type: "ok" });
-      // Role-based redirect
-      const role = mockUser.role;
-      if (role === 'admin') {
-        navigate('/reports');
-      } else if (role === 'professor') {
-        navigate('/professor/dashboard');
-      } else if (role === 'intern' || role === 'student') {
-        navigate('/intern');
-      } else {
-        navigate('/');
-      }
-    }, 1200);
+      
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+
+      setTimeout(() => {
+        if (data.user.role === 'admin') {
+          navigate('/reports');
+        } else {
+          navigate('/');
+        }
+      }, 1000);
+    } catch (err) {
+      setToast({ msg: err.message || "Login failed.", type: "err" });
+    }
   };
 
   return (
@@ -114,7 +113,7 @@ export default function AdminLoginPage({ onLogin, onBackClick }) {
 
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-1">
-              <img src="/logo.svg" alt="Athenura" className="h-10 md:h-11 w-auto object-contain flex-shrink-0 rounded-xl shadow-lg bg-white/30 border border-white/40 backdrop-blur-sm p-1 md:p-1.5" />
+              <img src={logo} alt="Athenura" className="h-10 md:h-11 w-auto object-contain flex-shrink-0" />
             </div>
             <p className="text-[10px] text-white/70 tracking-[0.13em] font-semibold pl-[48px]">ADMIN PORTAL</p>
           </div>
@@ -203,7 +202,7 @@ export default function AdminLoginPage({ onLogin, onBackClick }) {
             <div className="flex-1 h-px bg-slate-100" />
           </div>
 
-          <button onClick={()=>onBackClick&&onBackClick()}
+          <button onClick={() => navigate('/login')}
             className="w-full h-[42px] flex items-center justify-center gap-2 bg-white border-[1.5px] border-sky-400 text-sky-600 hover:bg-sky-50 active:scale-[0.985] font-bold text-sm rounded-[11px] transition-all">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M9 3L5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

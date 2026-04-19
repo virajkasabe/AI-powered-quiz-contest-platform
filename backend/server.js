@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRoutes);
 app.use("/api/quiz", quizRoutes);
-app.use("/api", leaderboardRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 // Handle 404
 app.use((req, res) => {
@@ -40,4 +40,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  console.log(`📡 Local: http://localhost:${PORT}`);
+});

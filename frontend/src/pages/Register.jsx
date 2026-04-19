@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiCall } from "../utils/api";
 
 const ShieldIcon = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -45,25 +46,16 @@ export default function Register() {
     if (!formData.secretKey.trim()) return setToast({ msg: "Secret Key is required.", type: "err" });
 
     setLoading(true);
-    setToast({ msg: "Registering account...", type: "ok" });
-
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      await apiCall("/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setToast({ msg: data.message || "Registration failed. Please try again.", type: "err" });
-      } else {
-        setToast({ msg: "Registration successful! Redirecting...", type: "ok" });
-        setTimeout(() => navigate("/"), 2000);
-      }
+      setToast({ msg: "Registration successful! Redirecting...", type: "ok" });
+      setTimeout(() => navigate("/"), 2000);
     } catch (err) {
-      setToast({ msg: "Server not reachable. Please check your connection.", type: "err" });
+      setToast({ msg: err.message || "Registration failed.", type: "err" });
     } finally {
       setLoading(false);
     }
