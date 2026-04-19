@@ -1,38 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { apiCall } from '../utils/api';
 
 const AllInterns = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDomain, setFilterDomain] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [interns, setInterns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState(null);
 
-  // Responsive classes
-  const mobileCardsClass = "md:hidden grid grid-cols-1 gap-4 pb-8";
-  const tableWrapperClass = "hidden md:block overflow-hidden";
+  useEffect(() => {
+    fetchInterns();
+  }, []);
 
-  // Mock Data
-  const [interns, setInterns] = useState([
-    { id: 'INT-001', name: 'Alice Johnson', email: 'alice@example.com', domain: 'Frontend', joinDate: '2023-09-15', status: 'Active' },
-    { id: 'INT-002', name: 'Bob Smith', email: 'bob@example.com', domain: 'Backend', joinDate: '2023-09-16', status: 'Active' },
-    { id: 'INT-003', name: 'Charlie Davis', email: 'charlie@example.com', domain: 'UI/UX', joinDate: '2023-09-18', status: 'Inactive' },
-    { id: 'INT-004', name: 'Diana Prince', email: 'diana@example.com', domain: 'Frontend', joinDate: '2023-10-01', status: 'Active' },
-    { id: 'INT-005', name: 'Ethan Hunt', email: 'ethan@example.com', domain: 'Data Science', joinDate: '2023-10-10', status: 'Active' },
-    { id: 'INT-006', name: 'Fiona Gallagher', email: 'fiona@example.com', domain: 'Backend', joinDate: '2023-10-12', status: 'Inactive' },
-  ]);
-
-  const filteredInterns = interns.filter(intern => {
-    const matchesSearch = intern.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          intern.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          intern.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDomain = filterDomain === 'All' || intern.domain === filterDomain;
-    const matchesStatus = filterStatus === 'All' || intern.status === filterStatus;
-    return matchesSearch && matchesDomain && matchesStatus;
-  });
+  const fetchInterns = async () => {
+    setLoading(true);
+    setDataError(null);
+    try {
+      const data = await apiCall("/admin/all-interns");
+      setInterns(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch interns:", error);
+      setDataError("Unable to connect to server. Please ensure the backend is running and your MongoDB IP is whitelisted.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = (id) => {
     if(window.confirm('Are you sure you want to delete this intern?')) {
-      setInterns(interns.filter(i => i.id !== id));
+      setInterns(interns.filter(i => i.uniqueId !== id));
     }
   };
 
@@ -46,19 +45,34 @@ const AllInterns = () => {
     setUpdatingStatus(id);
     
     try {
-      // Mock API call: PATCH /api/interns/{id}/status
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await apiCall("/admin/update-status", {
+        method: "PATCH",
+        body: JSON.stringify({ uniqueId: id, status: newStatus }),
+      });
       
-      // Optimistic Update
+      // Update local state
       setInterns(interns.map(intern => 
-        intern.id === id ? { ...intern, status: newStatus } : intern
+        intern.uniqueId === id ? { ...intern, status: newStatus } : intern
       ));
     } catch (error) {
-      alert('Failed to update status');
+      alert(error.message || 'Failed to update status');
     } finally {
       setUpdatingStatus(null);
     }
   };
+
+  // Responsive classes
+  const mobileCardsClass = "md:hidden grid grid-cols-1 gap-4 pb-8";
+  const tableWrapperClass = "hidden md:block overflow-hidden";
+
+  const filteredInterns = interns.filter(intern => {
+    const matchesSearch = intern.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          intern.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          intern.uniqueId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDomain = filterDomain === 'All' || intern.domain === filterDomain;
+    const matchesStatus = filterStatus === 'All' || intern.status === filterStatus;
+    return matchesSearch && matchesDomain && matchesStatus;
+  });
 
   const inputClass = "w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm placeholder-slate-400 dark:placeholder-slate-500";
   const selectClass = "px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm";
@@ -103,10 +117,20 @@ const AllInterns = () => {
               className={selectClass}
             >
               <option value="All">All Domains</option>
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="UI/UX">UI/UX</option>
-              <option value="Data Science">Data Science</option>
+              <option value="Data Science & Analytics">Data Science & Analytics</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Application Development">Application Development</option>
+              <option value="Social Media Management">Social Media Management</option>
+              <option value="Graphic Design">Graphic Design</option>
+              <option value="Digital Marketing">Digital Marketing</option>
+              <option value="Video Editing">Video Editing</option>
+              <option value="Full Stack Development">Full Stack Development</option>
+              <option value="MERN Stack Development">MERN Stack Development</option>
+              <option value="Content Writing">Content Writing</option>
+              <option value="Content Creator">Content Creator</option>
+              <option value="UI/UX Designing">UI/UX Designing</option>
+              <option value="Front-end Developer">Front-end Developer</option>
+              <option value="Back-end Developer">Back-end Developer</option>
             </select>
 
             <select
@@ -123,10 +147,10 @@ const AllInterns = () => {
 
         {/* Mobile Cards View */}
         <div className={mobileCardsClass}>
-          {filteredInterns.length > 0 ? (
+              {filteredInterns.length > 0 ? (
             filteredInterns.map((intern, index) => (
               <motion.div
-                key={intern.id}
+                key={intern.uniqueId}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -148,7 +172,7 @@ const AllInterns = () => {
                   <div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1">Unique ID</span>
                     <span className="font-mono font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md text-xs block">
-                      {intern.id}
+                      {intern.uniqueId}
                     </span>
                   </div>
                   <div>
@@ -157,7 +181,7 @@ const AllInterns = () => {
                   </div>
                   <div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1">Join Date</span>
-                    <span className="text-slate-600 dark:text-slate-400">{intern.joinDate}</span>
+                    <span className="text-slate-600 dark:text-slate-400">{new Date(intern.joiningDate).toLocaleDateString()}</span>
                   </div>
                   <div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1">Status</span>
@@ -170,15 +194,15 @@ const AllInterns = () => {
                 {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t border-slate-200/50 dark:border-slate-700">
                   <button 
-                    onClick={() => toggleStatus(intern.id, intern.status)}
-                    disabled={updatingStatus === intern.id}
+                    onClick={() => toggleStatus(intern.uniqueId, intern.status)}
+                    disabled={updatingStatus === intern.uniqueId}
                     className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs border transition-all disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-1.5
                       ${intern.status === 'Active' 
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800/50 dark:text-emerald-400' 
                         : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'
                       }`}
                   >
-                    {updatingStatus === intern.id ? (
+                    {updatingStatus === intern.uniqueId ? (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -199,7 +223,7 @@ const AllInterns = () => {
                     <button 
                       className="p-2.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
                       title="Delete"
-                      onClick={() => handleDelete(intern.id)}
+                      onClick={() => handleDelete(intern.uniqueId)}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -211,7 +235,7 @@ const AllInterns = () => {
             ))
           ) : (
             <div className="col-span-1 text-center py-12 text-slate-500 dark:text-slate-400">
-              <p className="text-lg font-medium mb-2">No interns found</p>
+              <p className="text-lg font-medium mb-2">{loading ? 'Loading interns...' : 'No interns found'}</p>
               <p className="text-sm">Try adjusting your search or filters</p>
             </div>
           )}
@@ -219,101 +243,131 @@ const AllInterns = () => {
 
         {/* Desktop Table View */}
         <div className={tableWrapperClass}>
-          <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-100/50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-                    <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Intern Detail</th>
-                    <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Unique ID</th>
-                    <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Domain</th>
-                    <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Joining Date</th>
-                    <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Status</th>
-                    <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50">
-                  {filteredInterns.length > 0 ? (
-                    filteredInterns.map((intern, index) => (
-                      <motion.tr 
-                        key={intern.id} 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors"
-                      >
-                        <td className="py-3 px-4 sm:px-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white font-bold shadow-sm">
-                              {intern.name.charAt(0)}
+            {dataError ? (
+              <div className="text-center py-20 px-6">
+                <div className="text-5xl mb-6">📡</div>
+                <h2 className="text-xl font-bold text-red-500 mb-2">Connection Issue Detected</h2>
+                <p className="text-slate-500 max-w-md mx-auto mb-8">{dataError}</p>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <button 
+                    onClick={fetchInterns}
+                    className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold hover:shadow-lg transition-all"
+                  >
+                    Retry Connection
+                  </button>
+                  <a 
+                    href="https://www.mongodb.com/docs/atlas/security-whitelist/" 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="px-8 py-3 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm flex items-center justify-center"
+                  >
+                    Check Whitelist Guide
+                  </a>
+                </div>
+              </div>
+            ) : filteredInterns.length > 0 ? (
+              <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100/50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Intern Detail</th>
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Unique ID</th>
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Domain</th>
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Joining Date</th>
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Status</th>
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50">
+                      {filteredInterns.map((intern, index) => (
+                        <motion.tr 
+                          key={intern.uniqueId} 
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors"
+                        >
+                          <td className="py-3 px-4 sm:px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white font-bold shadow-sm">
+                                {intern.name.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{intern.name}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{intern.email}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{intern.name}</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">{intern.email}</p>
+                          </td>
+                          <td className="py-3 px-4 sm:px-6">
+                            <span className="text-sm font-medium font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-md">
+                              {intern.uniqueId}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 sm:px-6 text-sm font-medium text-slate-700 dark:text-slate-300">{intern.domain}</td>
+                          <td className="py-3 px-4 sm:px-6 text-sm text-slate-600 dark:text-slate-400">{new Date(intern.joiningDate).toLocaleDateString()}</td>
+                          <td className="py-3 px-4 sm:px-6">
+                            <button 
+                              onClick={() => toggleStatus(intern.uniqueId, intern.status)}
+                              disabled={updatingStatus === intern.uniqueId}
+                              className={`flex items-center justify-center min-w-[80px] px-3 py-1 rounded-full text-xs font-bold border transition-all disabled:opacity-75 disabled:cursor-not-allowed
+                              ${intern.status === 'Active' 
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 dark:hover:bg-emerald-900/40' 
+                                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-700'
+                              }`}
+                            >
+                              {updatingStatus === intern.uniqueId ? (
+                                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                intern.status.toUpperCase()
+                              )}
+                            </button>
+                          </td>
+                          <td className="py-3 px-4 sm:px-6 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                               <button 
+                                 className="p-2 rounded-lg text-slate-400 hover:text-sky-600 border border-transparent hover:border-sky-200 hover:bg-sky-50 dark:hover:border-sky-800 dark:hover:bg-sky-900/30 transition-all"
+                                 title="View/Edit"
+                               >
+                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                 </svg>
+                               </button>
+                               <button 
+                                 className="p-2 rounded-lg text-slate-400 hover:text-red-600 border border-transparent hover:border-red-200 hover:bg-red-50 dark:hover:border-red-800 dark:hover:bg-red-900/30 transition-all"
+                                 title="Delete"
+                                 onClick={() => handleDelete(intern.uniqueId)}
+                               >
+                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                 </svg>
+                               </button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 sm:px-6">
-                          <span className="text-sm font-medium font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-md">
-                            {intern.id}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 sm:px-6 text-sm font-medium text-slate-700 dark:text-slate-300">{intern.domain}</td>
-                        <td className="py-3 px-4 sm:px-6 text-sm text-slate-600 dark:text-slate-400">{intern.joinDate}</td>
-                        <td className="py-3 px-4 sm:px-6">
-                          <button 
-                            onClick={() => toggleStatus(intern.id, intern.status)}
-                            disabled={updatingStatus === intern.id}
-                            className={`flex items-center justify-center min-w-[80px] px-3 py-1 rounded-full text-xs font-bold border transition-all disabled:opacity-75 disabled:cursor-not-allowed
-                            ${intern.status === 'Active' 
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 dark:hover:bg-emerald-900/40' 
-                              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-700'
-                            }`}
-                          >
-                            {updatingStatus === intern.id ? (
-                              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                            ) : (
-                              intern.status.toUpperCase()
-                            )}
-                          </button>
-                        </td>
-                        <td className="py-3 px-4 sm:px-6 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                             <button 
-                               className="p-2 rounded-lg text-slate-400 hover:text-sky-600 border border-transparent hover:border-sky-200 hover:bg-sky-50 dark:hover:border-sky-800 dark:hover:bg-sky-900/30 transition-all"
-                               title="View/Edit"
-                             >
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                               </svg>
-                             </button>
-                             <button 
-                               className="p-2 rounded-lg text-slate-400 hover:text-red-600 border border-transparent hover:border-red-200 hover:bg-red-50 dark:hover:border-red-800 dark:hover:bg-red-900/30 transition-all"
-                               title="Delete"
-                               onClick={() => handleDelete(intern.id)}
-                             >
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                               </svg>
-                             </button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="py-12 text-center text-slate-500 dark:text-slate-400">
-                        No interns found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="py-12 text-center text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
+                {loading ? (
+                  <div className="flex flex-col items-center gap-4 py-8">
+                    <div className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="font-bold text-slate-400 uppercase tracking-widest text-xs">Fetching Platform Interns...</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">No interns found</p>
+                    <p className="text-sm">Try adjusting your search or filters</p>
+                  </>
+                )}
+              </div>
+            )}
         </div>
       </motion.div>
     </div>

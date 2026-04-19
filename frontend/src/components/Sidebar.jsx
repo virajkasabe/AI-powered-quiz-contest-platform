@@ -10,12 +10,11 @@ const Sidebar = ({ isOpen, onClose }) => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
-  }, []);
+  }, [location]);
 
 
   const menuItems = [
     { name: "Leaderboard", path: "/intern-leaderboard" },
-    { name: "Contests", path: "/contests" },
     { name: "Upcoming Quiz", path: "/upcoming" },
     { name: "My Quizzes", path: "/my-quizzes" },
   ];
@@ -61,11 +60,11 @@ const Sidebar = ({ isOpen, onClose }) => {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-medium text-sm shadow-sm ring-2 ring-transparent dark:ring-slate-800">
-                  {user.userName.charAt(0).toUpperCase()}
+                  {user?.userName?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{user.userName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{user.domain}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{user?.userName || "User"}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{user?.domain || (user?.role === 'admin' ? 'Administration' : '')}</p>
                 </div>
               </div>
             </div>

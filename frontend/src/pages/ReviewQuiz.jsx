@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 const ReviewQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDomain, setFilterDomain] = useState('All');
+  const [loading, setLoading] = useState(true);
 
   // Submissions State
-  const [submissions, setSubmissions] = useState([
-    { id: 1, quizTitle: 'Frontend Basics', internName: 'Alice Johnson', domain: 'Frontend', score: 85, date: '2023-11-01', status: 'Pending Review' },
-    { id: 2, quizTitle: 'Data Structures', internName: 'Bob Smith', domain: 'Backend', score: 60, date: '2023-11-02', status: 'Reviewed' },
-    { id: 3, quizTitle: 'UI Principles', internName: 'Charlie Davis', domain: 'UI/UX', score: 92, date: '2023-11-03', status: 'Pending Review' },
-    { id: 4, quizTitle: 'React Hooks', internName: 'Diana Prince', domain: 'Frontend', score: 78, date: '2023-11-04', status: 'Pending Review' },
-    { id: 5, quizTitle: 'Machine Learning Basics', internName: 'Ethan Hunt', domain: 'Data Science', score: 95, date: '2023-11-05', status: 'Reviewed' },
-  ]);
+  const [submissions, setSubmissions] = useState([]);
 
   // Details View State
   const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -25,44 +21,69 @@ const ReviewQuiz = () => {
   const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
-    if (location.state?.newContest) {
-      const contest = location.state.newContest;
-      const newSubmission = {
-        id: Date.now(),
-        quizTitle: contest.title || 'Untitled Contest',
-        internName: 'Admin Created',
-        domain: contest.category || 'General',
-        score: contest.marks || 100,
-        date: new Date().toISOString().split('T')[0],
-        status: 'Pending Review',
-      };
-      
-      setSubmissions(prev => [newSubmission, ...prev]);
-      window.history.replaceState({}, document.title);
+    fetchSubmissions();
+  }, []);
+
+  const fetchSubmissions = async () => {
+    setLoading(true);
+    try {
+      const response = await apiCall("/admin/all-attempts");
+      if (response && response.success) {
+        // Map API data to component format
+        const formatted = response.data.map(at => ({
+          id: at._id,
+          quizTitle: at.contestId?.contestTitle || 'Unknown Contest',
+          internName: at.internName,
+          domain: at.domain || 'Domain',
+          score: at.score,
+          totalScore: at.totalQuestions || 0, // Fallback if missing
+          date: new Date(at.endTime).toISOString().split('T')[0],
+          status: at.isSubmitted ? 'Reviewed' : 'Pending Review',
+          originalData: at
+        }));
+        setSubmissions(formatted);
+      }
+    } catch (err) {
+      console.error("Failed to fetch submissions:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [location.state]);
+  };
 
   const filteredSubmissions = submissions.filter(sub => {
-    const matchesSearch = sub.internName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          sub.quizTitle.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDomain = filterDomain === 'All' || sub.domain === filterDomain;
+    const matchesSearch = (sub.internName || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (sub.quizTitle || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDomain = filterDomain === 'All' || (sub.domain || '').trim().toUpperCase() === filterDomain.trim().toUpperCase();
     return matchesSearch && matchesDomain;
   });
 
-  const domains = ['All', 'Frontend', 'Backend', 'UI/UX', 'Data Science'];
+  const domains = ['All', 'DATA SCIENCE & ANALYTICS', 'HUMAN RESOURCES', 'APPLICATION DEVELOPMENT', 'SOCIAL MEDIA MANAGEMENT', 'GRAPHIC DESIGN', 'DIGITAL MARKETING', 'VIDEO EDITING', 'FULL STACK DEVELOPMENT', 'MERN STACK DEVELOPMENT', 'CONTENT WRITING', 'CONTENT CREATOR', 'UI/UX DESIGNING', 'FRONT-END DEVELOPER', 'BACK-END DEVELOPER'];
 
   const handleReview = async (quiz) => {
     setSelectedQuiz(quiz);
     setLoadingDetails(true);
     try {
-      // Mock API call to get quiz questions
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setQuestions([
-        { id: 101, text: "What is React?", type: "MCQ", options: ["A Library", "A Framework", "A Language", "An OS"], correct: "A Library", selected: "A Library" },
-        { id: 102, text: "How do you manage local state in functional components?", type: "MCQ", options: ["useState", "useEffect", "useContext", "Redux"], correct: "useState", selected: "useEffect" },
-        { id: 103, text: "Is JavaScript a single-threaded language?", type: "True/False", options: ["True", "False"], correct: "True", selected: "True" },
-      ]);
+      const contestId = quiz.originalData.contestId._id;
+      // 1. Fetch the contest questions
+      const qRes = await apiCall(`/admin/get-questions/${contestId}`);
+      if (qRes && qRes.success) {
+        // 2. Map chosen answers from attempt to questions
+        const chosenAnswers = quiz.originalData.answers || [];
+        const enrichedQuestions = qRes.data.map(q => {
+          const attemptAns = chosenAnswers.find(a => a.questionId === q._id);
+          return {
+            id: q._id,
+            text: q.questionText,
+            type: "MCQ", // Or dynamic if available
+            options: q.options,
+            correct: q.correctAnswer,
+            selected: attemptAns ? attemptAns.selectedAnswer : 'No answer given'
+          };
+        });
+        setQuestions(enrichedQuestions);
+      }
     } catch (error) {
+      console.error("Failed to load quiz details:", error);
       alert("Failed to load quiz details.");
       setSelectedQuiz(null);
     } finally {
@@ -71,23 +92,28 @@ const ReviewQuiz = () => {
   };
 
   const handleReplaceQuestion = async (questionId) => {
-    if (!window.confirm("Are you sure you want to replace this question?")) return;
+    if (!window.confirm("Are you sure you want to replace this question with a new AI-generated one? This will affect the contest for ALL interns.")) return;
     
     setReplacingQuestionId(questionId);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Optimistic update
-      setQuestions(prev => prev.map(q => 
-        q.id === questionId 
-        ? { ...q, text: "Newly assigned dummy question from question bank?", options: ["Option A", "Option B", "Option C", "Option D"], correct: "Option A", selected: null } 
-        : q
-      ));
+      const response = await apiCall(`/admin/replace-question/${questionId}`, {
+        method: 'PUT'
+      });
       
-      setToastMessage("Question replaced successfully!");
-      setTimeout(() => setToastMessage(null), 3000);
+      if (response && response.success) {
+        const newQ = response.data;
+        // Optimistic update in UI
+        setQuestions(prev => prev.map(q => 
+          q.id === questionId 
+          ? { ...q, text: newQ.questionText, options: newQ.options, correct: newQ.correctAnswer } 
+          : q
+        ));
+        
+        setToastMessage("Question replaced successfully with AI content!");
+        setTimeout(() => setToastMessage(null), 3000);
+      }
     } catch (error) {
-      alert("Failed to replace question.");
+      alert("Failed to replace question: " + (error.message || "Unknown error"));
     } finally {
       setReplacingQuestionId(null);
     }
@@ -223,98 +249,114 @@ const ReviewQuiz = () => {
              </div>
      
              {/* Filters */}
-             <div className="flex flex-wrap gap-4 mb-8 p-4 bg-sky-50/50 dark:bg-slate-800/50 rounded-2xl border border-sky-200/50 dark:border-slate-700/50 shadow-sm transition-colors duration-300">
-               <div className="flex items-center gap-2">
-                 <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Domain:</span>
-                 {domains.map(domain => (
-                   <button
-                     key={domain}
-                     onClick={() => setFilterDomain(domain)}
-                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                       filterDomain === domain
-                         ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25'
-                         : 'bg-white/70 hover:bg-sky-50 text-slate-700 hover:shadow-sm hover:border-sky-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
-                     }`}
-                   >
-                     {domain}
-                   </button>
-                 ))}
+             <div className="flex flex-col sm:flex-row items-center gap-4 mb-8 p-6 bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-300">
+               <div className="flex items-center gap-3 w-full sm:w-auto">
+                 <div className="p-2 bg-sky-100 dark:bg-sky-900/30 rounded-xl text-sky-600 dark:text-sky-400">
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
+                   </svg>
+                 </div>
+                 <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Filter by Domain</span>
+               </div>
+               
+               <div className="relative flex-1 w-full sm:max-w-xs">
+                 <select
+                   value={filterDomain}
+                   onChange={(e) => setFilterDomain(e.target.value)}
+                   className="w-full pl-4 pr-10 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all appearance-none text-slate-700 dark:text-slate-200 font-medium cursor-pointer shadow-sm"
+                 >
+                   {domains.map(domain => (
+                     <option key={domain} value={domain}>{domain}</option>
+                   ))}
+                 </select>
+                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                   </svg>
+                 </div>
                </div>
              </div>
      
              {/* Table Card */}
-             {filteredSubmissions.length === 0 ? (
-               <div className="flex flex-col items-center justify-center py-24 text-center">
-                 <div className="w-24 h-24 bg-sky-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-6 shadow-md border border-sky-200/50 dark:border-slate-700">
-                   <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                   </svg>
-                 </div>
-                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">No Submissions Found</h2>
-                 <p className="text-slate-500 dark:text-slate-400 max-w-md">
-                   Try adjusting your search terms or filters.
-                 </p>
+             {loading ? (
+               <div className="py-20 flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-slate-500 font-bold">Fetching submissions...</p>
                </div>
              ) : (
-               <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
-                 <table className="w-full whitespace-nowrap">
-                   <thead className="bg-sky-50/50 dark:bg-slate-800/80 transition-colors duration-300">
-                     <tr>
-                       <th className="px-6 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Quiz Title / Intern</th>
-                       <th className="px-4 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Domain</th>
-                       <th className="px-4 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Date</th>
-                       <th className="px-4 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Status</th>
-                       <th className="px-6 py-5 text-right text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Actions</th>
-                     </tr>
-                   </thead>
-                   <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                     {filteredSubmissions.map((sub, index) => (
-                       <motion.tr
-                         key={sub.id}
-                         initial={{ opacity: 0, x: -20 }}
-                         animate={{ opacity: 1, x: 0 }}
-                         transition={{ delay: index * 0.05 }}
-                         className="hover:bg-sky-50/50 dark:hover:bg-slate-800/50 transition-colors"
-                       >
-                         <td className="px-6 py-6 max-w-md">
-                           <div className="font-medium text-slate-900 dark:text-white line-clamp-2">{sub.quizTitle}</div>
-                           <div className="flex items-center gap-2 mt-2">
-                             <div className="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-[10px]">
-                               {sub.internName.charAt(0)}
+               filteredSubmissions.length === 0 ? (
+                 <div className="flex flex-col items-center justify-center py-24 text-center">
+                   <div className="w-24 h-24 bg-sky-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-6 shadow-md border border-sky-200/50 dark:border-slate-700">
+                     <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                     </svg>
+                   </div>
+                   <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">No Submissions Found</h2>
+                   <p className="text-slate-500 dark:text-slate-400 max-w-md">
+                     Try adjusting your search terms or filters.
+                   </p>
+                 </div>
+               ) : (
+                 <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                   <table className="w-full whitespace-nowrap">
+                     <thead className="bg-sky-50/50 dark:bg-slate-800/80 transition-colors duration-300">
+                       <tr>
+                         <th className="px-6 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Quiz Title / Intern</th>
+                         <th className="px-4 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Domain</th>
+                         <th className="px-4 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Date</th>
+                         <th className="px-4 py-5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Status</th>
+                         <th className="px-6 py-5 text-right text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Actions</th>
+                       </tr>
+                     </thead>
+                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                       {filteredSubmissions.map((sub, index) => (
+                         <motion.tr
+                           key={sub.id}
+                           initial={{ opacity: 0, x: -20 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           transition={{ delay: index * 0.05 }}
+                           className="hover:bg-sky-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                         >
+                           <td className="px-6 py-6 max-w-md">
+                             <div className="font-medium text-slate-900 dark:text-white line-clamp-1">{sub.quizTitle}</div>
+                             <div className="flex items-center gap-2 mt-2">
+                               <div className="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-[10px]">
+                                 {sub.internName.charAt(0)}
+                               </div>
+                               <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">{sub.internName}</span>
                              </div>
-                             <span className="text-xs text-slate-500 dark:text-slate-400">{sub.internName}</span>
-                           </div>
-                         </td>
-                         <td className="px-4 py-6">
-                           <span className="px-3 py-1 bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 rounded-full text-sm font-bold border border-sky-200/50 dark:border-sky-800/50">
-                             {sub.domain}
-                           </span>
-                         </td>
-                         <td className="px-4 py-6 text-sm text-slate-600 dark:text-slate-400">
-                           {sub.date}
-                         </td>
-                         <td className="px-4 py-6">
-                           <span className={`px-3 py-1 rounded-full text-xs font-bold
-                             ${sub.status === 'Reviewed' 
-                               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                               : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                             }`}>
-                             {sub.status.toUpperCase()}
-                           </span>
-                         </td>
-                         <td className="px-6 py-6 text-right space-x-2">
-                           <button 
-                             onClick={() => handleReview(sub)}
-                             className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-bold rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)] active:scale-[0.98] transition-all"
-                           >
-                             Review
-                           </button>
-                         </td>
-                       </motion.tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
+                           </td>
+                           <td className="px-4 py-6">
+                             <span className="px-3 py-1 bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 rounded-full text-[10px] font-black uppercase border border-sky-200/50 dark:border-sky-800/50">
+                               {sub.domain}
+                             </span>
+                           </td>
+                           <td className="px-4 py-6 text-sm text-slate-600 dark:text-slate-400 font-medium">
+                             {sub.date}
+                           </td>
+                           <td className="px-4 py-6">
+                             <span className={`px-3 py-1 rounded-full text-[10px] font-black
+                               ${sub.status === 'Reviewed' 
+                                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                                 : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                               }`}>
+                               {sub.status.toUpperCase()}
+                             </span>
+                           </td>
+                           <td className="px-6 py-6 text-right space-x-2">
+                             <button 
+                               onClick={() => handleReview(sub)}
+                               className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-bold rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)] active:scale-[0.98] transition-all"
+                             >
+                               Review
+                             </button>
+                           </td>
+                         </motion.tr>
+                       ))}
+                     </tbody>
+                   </table>
+                 </div>
+               )
              )}
            </motion.div>
         )}

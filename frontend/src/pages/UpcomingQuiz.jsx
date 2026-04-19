@@ -1,60 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 const UpcomingQuiz = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [now, setNow] = useState(new Date());
   const [selectedQuizForStart, setSelectedQuizForStart] = useState(null);
+  const [upcomingQuizzes, setUpcomingQuizzes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
     
+    fetchQuizzes();
+
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Generate dynamic dates relative to today for demo purposes
-  const getDynamicDateStr = (addMinutes) => {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() + addMinutes);
-    return {
-      dateObj: d,
-      date: d.toISOString().split('T')[0],
-      time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    };
+  const fetchQuizzes = async () => {
+    try {
+      const data = await apiCall("/quiz/upcoming-quizzes");
+      // Map API data to frontend format
+      const formattedQuizzes = data.data.map(quiz => ({
+        id: quiz.contestId,
+        title: quiz.contestTitle,
+        domain: quiz.domain,
+        date: new Date(quiz.date).toISOString().split('T')[0],
+        time: new Date(quiz.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        duration: `${quiz.duration} mins`,
+        status: 'Upcoming',
+        startTime: new Date(quiz.startTime),
+        endTime: new Date(quiz.expiryDate)
+      }));
+      setUpcomingQuizzes(formattedQuizzes);
+    } catch (error) {
+      console.error("Failed to fetch quizzes:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const futureQuiz = getDynamicDateStr(125); // ~2 hours in future
-  const activeQuiz = getDynamicDateStr(-10); // 10 minutes in the past (active)
-
-  // Mock data for upcoming quizzes
-  const upcomingQuizzes = [
-    {
-      id: 1,
-      title: 'Monthly Frontend Challenge',
-      domain: 'Frontend',
-      date: activeQuiz.date,
-      time: activeQuiz.time,
-      duration: '60 mins',
-      status: 'Upcoming'
-    },
-    {
-      id: 2,
-      title: 'React Performance Deep Dive',
-      domain: 'Frontend',
-      date: futureQuiz.date,
-      time: futureQuiz.time,
-      duration: '45 mins',
-      status: 'Upcoming'
-    }
-  ];
-
   // Logic Helpers
-  const getTargetDate = (dateStr, timeStr) => {
-    return new Date(`${dateStr} ${timeStr}`);
+  const getTargetDate = (quiz) => {
+    return quiz.startTime;
   };
 
   const getCountdown = (targetDate) => {
@@ -86,7 +78,7 @@ const UpcomingQuiz = () => {
         <div className="flex flex-col gap-5">
           {upcomingQuizzes.length > 0 ? (
             upcomingQuizzes.map((quiz, index) => {
-              const targetDate = getTargetDate(quiz.date, quiz.time);
+              const targetDate = getTargetDate(quiz);
               const countdown = getCountdown(targetDate);
               const isTimeReached = countdown === null;
 
@@ -251,8 +243,9 @@ const UpcomingQuiz = () => {
                 </button>
                 <button 
                   onClick={() => {
+                    const quizId = selectedQuizForStart.id;
                     setSelectedQuizForStart(null);
-                    navigate('/quiz');
+                    navigate(`/quiz/${quizId}`);
                   }}
                   className="px-8 py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)] active:scale-[0.98] transition-all"
                 >

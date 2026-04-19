@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 const CreateContest = () => {
   const navigate = useNavigate();
@@ -63,13 +64,22 @@ const CreateContest = () => {
 
     setLoading(true);
     try {
-      // Mock API call - replace with real endpoint
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await apiCall("/admin/create-contest", {
+        method: "POST",
+        body: JSON.stringify(formData),
+      });
       
-      // Navigate to review-question page and pass the created contest data
-      navigate('/review-question', { state: { newContest: formData } });
+      // Navigate to review-question page and pass the created contest ID and data
+      navigate('/review-question', { 
+        state: { 
+          newContest: {
+            ...formData,
+            contestId: response.contest.contestId
+          } 
+        } 
+      });
     } catch (error) {
-      setErrors({ submit: 'Failed to create contest. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to create contest. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -82,7 +92,22 @@ const CreateContest = () => {
   };
 
   const types = ['MCQ', 'Coding', 'Mixed'];
-  const domains = ['Frontend', 'Backend', 'Data Science', 'UI/UX Design', 'DevOps', 'Other'];
+  const domains = [
+    "DATA SCIENCE & ANALYTICS",
+    "HUMAN RESOURCES",
+    "APPLICATION DEVELOPMENT",
+    "SOCIAL MEDIA MANAGEMENT",
+    "GRAPHIC DESIGN",
+    "DIGITAL MARKETING",
+    "VIDEO EDITING",
+    "FULL STACK DEVELOPMENT",
+    "MERN STACK DEVELOPMENT",
+    "CONTENT WRITING",
+    "CONTENT CREATOR",
+    "UI/UX DESIGNING",
+    "FRONT-END DEVELOPER",
+    "BACK-END DEVELOPER"
+  ];
 
   const inputClass = "w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm placeholder-slate-400 dark:placeholder-slate-500";
   const errorInputClass = "w-full px-4 py-3 bg-red-50 dark:bg-red-900/10 border border-red-300 dark:border-red-500/50 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm";
