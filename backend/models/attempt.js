@@ -17,6 +17,10 @@ const attemptSchema = new mongoose.Schema({
   timeTaken: {
     type: Number,
   }, // In seconds, for tie-breaking [cite: 60, 81]
+  totalQuestions: {
+    type: Number,
+    required: true,
+  },
   startTime: {
     type: Date,
     default: Date.now,

@@ -199,13 +199,13 @@ export default function QuizPage() {
     }));
 
     try {
-      const response = await apiCall("/quiz/submit", {
+      const response = await apiCall("/quiz/submit-quiz", {
         method: "POST",
         body: JSON.stringify({
           contestId: contestId,
           domain: contestDetails.domain,
           answers: submissionAnswers,
-          timeTaken: `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`
+          timeTaken: elapsed
         })
       });
 
