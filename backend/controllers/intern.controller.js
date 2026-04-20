@@ -76,7 +76,7 @@ export const submitQuiz = async (req, res) => {
   try {
     const { contestId, domain, answers } = req.body;
     const internUniqueId = req.user.uniqueId;
-    const Domain = domain.trim().toUpperCase();
+    const Domain = (domain || "").trim().toUpperCase();
 
     // 1. Check if Contest exists and is ACTIVE
     const contest = await Contest.findOne({ contestId });
@@ -108,12 +108,19 @@ export const submitQuiz = async (req, res) => {
     // Calculate score
     const evaluatedAnswers = answers.map((a) => {
       const question = questionMap[a.questionId];
-      const isCorrect = question.correctAnswer === a.selectedAnswer;
+      
+      // If skipped or out of bounds, it's incorrect
+      const userAnswerText = (a.selectedAnswer !== null && question.options[a.selectedAnswer]) 
+        ? question.options[a.selectedAnswer] 
+        : null;
+
+      const isCorrect = question.correctAnswer === userAnswerText;
 
       if (isCorrect) score++;
 
       return {
-        ...a,
+        questionId: a.questionId,
+        selectedAnswer: userAnswerText || "Skipped",
         isCorrect,
       };
     });

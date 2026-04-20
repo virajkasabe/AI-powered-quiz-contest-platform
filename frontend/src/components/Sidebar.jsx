@@ -14,7 +14,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
 
   const menuItems = [
-    { name: "Leaderboard", path: "/intern-leaderboard" },
+    { name: "Hall of Fame", path: "/intern-leaderboard" },
     { name: "Upcoming Quiz", path: "/upcoming" },
     { name: "My Quizzes", path: "/my-quizzes" },
   ];
