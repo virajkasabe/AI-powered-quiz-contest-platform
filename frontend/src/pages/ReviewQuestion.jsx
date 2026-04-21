@@ -10,6 +10,7 @@ const ReviewQuestion = () => {
   
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [replacingId, setReplacingId] = useState(null);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -45,6 +46,39 @@ const ReviewQuestion = () => {
     // Navigate back to all contests after publishing
     alert('Contest published successfully!');
     navigate('/contests');
+  };
+
+  const handleReplaceQuestion = async (questionId) => {
+    setReplacingId(questionId);
+    try {
+      const response = await apiCall('/questions/random');
+      let newQuestion;
+      
+      if (response && response.success && response.data) {
+        const q = response.data;
+        newQuestion = {
+          id: q._id || `new_${Date.now()}`,
+          text: q.questionText,
+          options: q.options,
+          correct: q.correctAnswer
+        };
+      } else {
+        throw new Error("Failed to fetch from API");
+      }
+      
+      setQuestions(prev => prev.map(q => q.id === questionId ? newQuestion : q));
+    } catch (error) {
+      console.error("Failed to replace question, using dummy data:", error);
+      const dummyQuestion = {
+        id: `dummy_${Date.now()}`,
+        text: "What is the primary role of a React component? (Replaced)",
+        options: ["Manage database", "Render UI", "Handle routing", "Style elements"],
+        correct: "Render UI"
+      };
+      setQuestions(prev => prev.map(q => q.id === questionId ? dummyQuestion : q));
+    } finally {
+      setReplacingId(null);
+    }
   };
 
   return (
@@ -107,12 +141,22 @@ const ReviewQuestion = () => {
                   ))}
                 </div>
                 
-                <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/30">
-                  <button className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    Edit
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                    Remove
+                <div className="flex justify-end mt-[10px] pt-4 border-t border-slate-200 dark:border-slate-700/30">
+                  <button 
+                    onClick={() => handleReplaceQuestion(q.id)}
+                    disabled={replacingId === q.id}
+                    className={`flex items-center gap-1.5 border border-[#3b82f6] text-[#3b82f6] rounded-[8px] px-[14px] py-[6px] hover:bg-[#eff6ff] transition-colors text-sm font-medium dark:hover:bg-blue-900/20 ${replacingId === q.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {replacingId === q.id ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin"></div>
+                        Replacing...
+                      </>
+                    ) : (
+                      <>
+                        <span>🔄</span> Replace
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

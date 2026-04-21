@@ -1,9 +1,14 @@
 import Groq from "groq-sdk";
 import "dotenv/config";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+let groq;
+if (process.env.GROQ_API_KEY) {
+  groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+  });
+} else {
+  console.warn("⚠️ GROQ_API_KEY is missing. Groq features will fail if used.");
+}
 
 export const Groq_questions = async (
   domain,
@@ -11,6 +16,9 @@ export const Groq_questions = async (
   count = 20,
 ) => {
   try {
+    if (!groq) {
+      throw new Error("GROQ_API_KEY is missing in environment variables.");
+    }
     // Safety: Limit the list to avoid "BadRequestError" (Prompt too long)
     const slicedList = forbiddenList.slice(-15);
 

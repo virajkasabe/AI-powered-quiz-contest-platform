@@ -1,4 +1,15 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly define path to ensure dotenv finds the file in the current directory
+dotenv.config({ path: path.join(__dirname, ".env") });
+
+console.log("DEBUG ENV -> MONGO_URL loaded as:", process.env.MONGO_URL ? process.env.MONGO_URL : "UNDEFINED");
+
 
 import express from "express";
 import cors from "cors";
