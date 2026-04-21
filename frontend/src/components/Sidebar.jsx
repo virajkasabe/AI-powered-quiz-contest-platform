@@ -22,7 +22,6 @@ const Sidebar = ({ isOpen, onClose }) => {
   const adminItems = [
     { name: "Leaderboard", path: "/leaderboard" },
     { name: "All Contests", path: "/contests" },
-    { name: "Review Quiz", path: "/review-quiz" },
     { name: "All Interns", path: "/all-interns" },
     { name: "Upload Interns", path: "/upload-interns" },
   ];
