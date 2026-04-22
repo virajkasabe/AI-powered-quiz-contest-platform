@@ -20,6 +20,7 @@ import AllContests from './pages/AllContests';
 import ReviewQuestion from './pages/ReviewQuestion';
 import AllInterns from './pages/AllInterns';
 import UploadInterns from './pages/UploadInterns';
+import ContestResults from './pages/ContestResults';
 
 import Register from './pages/Register';
 
@@ -63,6 +64,7 @@ function AppRoutes() {
           {/* Admin Dashboard Aliases to prevent 404s */}
           <Route path="/admin-dashboard" element={<DomainReport />} />
           <Route path="/admin/interns" element={<AllInterns />} />
+          <Route path="/admin/contest-results/:id" element={<ContestResults />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

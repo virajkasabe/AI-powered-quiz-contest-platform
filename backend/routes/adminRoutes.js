@@ -10,6 +10,7 @@ import {
   replaceQuestion,
   getAllContests,
   getAllAttempts,
+  deleteContest,
 } from "../controllers/admin.controllers.js";
 
 import { protectRoute } from "../middlewares/authMiddleware.js";
@@ -38,5 +39,8 @@ router.patch("/update-status", updateInternStatus);
 
 // 🔄 Replace Question with AI Content
 router.put("/replace-question/:id", replaceQuestion);
+
+// 🗑️ Delete Contest
+router.delete("/delete-contest/:id", deleteContest);
 
 export default router;
