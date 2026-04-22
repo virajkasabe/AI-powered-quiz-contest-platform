@@ -68,6 +68,29 @@ const AllContests = () => {
     }
   };
 
+  const handleDelete = async (contestId) => {
+    if (!window.confirm("Are you sure you want to delete this contest?")) {
+      return;
+    }
+
+    try {
+      const response = await apiCall(`/admin/delete-contest/${contestId}`, {
+        method: "DELETE",
+      });
+
+      if (response.success) {
+        alert("✅ Contest deleted successfully!");
+        setContests((prev) => prev.filter((c) => c.contestId !== contestId));
+      } else {
+        alert(`❌ Error: ${response.message || 'Failed to delete'}`);
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert(`❌ Failed to delete contest: ${error.message}`);
+    }
+  };
+
+
   return (
     <div className="w-full h-full p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
       <motion.div
@@ -229,6 +252,12 @@ const AllContests = () => {
                                 >
                                   Award Badges
                                 </button>
+                                <button
+                                  onClick={() => navigate(`/admin/contest-results/${contest.contestId}`)}
+                                  className="px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-500/20 active:scale-95 transition-all text-sm whitespace-nowrap"
+                                >
+                                  View Result
+                                </button>
                                 {contest.awardGiven && (
                                   <button 
                                     disabled
@@ -257,7 +286,7 @@ const AllContests = () => {
                                   </button>
                                 ) : (
                                   <button 
-                                    onClick={() => console.log('Delete logic placeholder')}
+                                    onClick={() => handleDelete(contest.contestId)}
                                     className="p-3 text-red-500 hover:text-red-700 transition-colors rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
                                     title="Delete Contest"
                                   >

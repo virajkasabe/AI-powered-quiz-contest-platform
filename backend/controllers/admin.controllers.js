@@ -372,3 +372,32 @@ export const getAllAttempts = async (req, res) => {
     res.status(500).json({ message: "❌ Server error.", error: error.message });
   }
 };
+
+export const deleteContest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "❌ Contest ID is required." });
+    }
+
+    const deletedContest = await Contest.findOneAndDelete({ contestId: id });
+    if (!deletedContest) {
+      return res.status(404).json({ message: "❌ Contest not found." });
+    }
+
+    await Question.deleteMany({ contestId: id });
+    await Attempt.deleteMany({ contestId: deletedContest._id });
+
+    res.status(200).json({
+      success: true,
+      message: "✅ Contest deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Error in deleteContest:", error);
+    res.status(500).json({
+      message: "❌ Server error during contest deletion.",
+      error: error.message,
+    });
+  }
+};
