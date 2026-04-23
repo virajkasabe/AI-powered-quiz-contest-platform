@@ -6,6 +6,7 @@ import { apiCall } from '../utils/api';
 const ContestResults = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  console.log("Route Param ID:", id);
   const [quizData, setQuizData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +16,9 @@ const ContestResults = () => {
       setIsLoading(true);
       try {
         const response = await apiCall(`/leaderboard/contest/${id}`);
+        console.log("Contest Details Response:", response);
         if (response && response.success) {
+          console.log("Contest Results Data:", response.data);
           setQuizData(response.data);
         } else {
           setError(response?.message || "Could not load result data.");

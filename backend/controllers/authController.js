@@ -43,9 +43,11 @@ export const login = async (req, res) => {
         id: user.uniqueId,
         userName: user.name,
         email: user.email,
+        mobile: user.mobile,
         domain: user.domain,
         status: user.status,
         badgesEarned: user.badgesEarned,
+        joiningDate: user.joiningDate,
         role: "intern",
       },
     });

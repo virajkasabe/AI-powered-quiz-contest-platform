@@ -102,6 +102,21 @@ export const getContestLeaderboard = async (req, res) => {
       return res.status(404).json({ success: false, message: "❌ Contest not found." });
     }
 
+    const now = new Date();
+    const start = new Date(contest.startTime);
+    const end = new Date(contest.expiryDate);
+    let status = "Completed";
+    if (now < start) status = "Upcoming";
+    else if (now >= start && now <= end) status = "Ongoing";
+
+    if (status !== "Completed") {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Results are available only after the contest is completed.",
+        status 
+      });
+    }
+
     // Fetch all submitted attempts for this contest
     const attempts = await Attempt.find({ contestId: contest._id, isSubmitted: true })
       .sort({ score: -1, timeTaken: 1 });
@@ -141,11 +156,14 @@ export const getContestLeaderboard = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      contestTitle: contest.contestTitle,
-      domain: contest.domain,
-      isFinalized,
-      count: rankedParticipants.length,
-      data: rankedParticipants,
+      data: {
+        title: contest.contestTitle,
+        domain: contest.domain,
+        date: contest.date,
+        totalQuestions: contest.questionCount || 0,
+        isFinalized,
+        participants: rankedParticipants
+      }
     });
 
   } catch (error) {

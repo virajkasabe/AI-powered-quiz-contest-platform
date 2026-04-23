@@ -25,7 +25,7 @@ export const protectRoute = async (req, res, next) => {
     }
 
     // Try to find in Intern model first
-    let user = await Intern.findById(decoded.userId).select("-joiningDate");
+    let user = await Intern.findById(decoded.userId);
     
     // If not found in Intern, try Admin model
     if (!user) {

@@ -236,7 +236,11 @@ export const getInternStats = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
+        uniqueId: user.uniqueId,
         name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        role: user.role,
         domain: user.domain,
         overallRank: overallRank || "N/A",
         totalInterns: allInterns.length,
@@ -244,7 +248,9 @@ export const getInternStats = async (req, res) => {
         domainInterns: domainRanked.length,
         totalScore,
         recentScore: recentAttempt ? Math.round((recentAttempt.score / recentAttempt.totalQuestions) * 100) : 0,
-        badgesEarned: user.badgesEarned
+        badgesEarned: user.badgesEarned,
+        status: user.status,
+        joiningDate: user.joiningDate
       }
     });
 
