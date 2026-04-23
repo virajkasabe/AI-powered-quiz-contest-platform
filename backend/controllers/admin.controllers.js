@@ -4,6 +4,7 @@ import Question from "../models/question.js";
 import Intern from "../models/intern.js";
 import Contest from "../models/contests.js";
 import Attempt from "../models/attempt.js";
+import Badge from "../models/badges.js";
 import xlsx from "xlsx";
 import "dotenv/config";
 import { createContestID } from "../utils/createContestID.js";
@@ -34,6 +35,7 @@ export const uploadInterns = async (req, res) => {
             uniqueId: row.uniqueId,
             name: row.name,
             email: row.email,
+            mobile: row.mobile || row.phone || row.contact || "N/A",
             domain: row.domain ? row.domain.trim().toUpperCase() : "GENERAL",
             joiningDate: new Date(row.joiningDate),
             status: row.status || "Active",
@@ -334,10 +336,23 @@ export const replaceQuestion = async (req, res) => {
 export const getAllContests = async (req, res) => {
   try {
     const contests = await Contest.find().sort({ date: -1 });
+    
+    // 🏆 Check for badges to ensure awardGiven is accurate for older contests
+    const enrichedContests = await Promise.all(contests.map(async (contest) => {
+      if (contest.awardGiven) return contest;
+      
+      const badgeExists = await Badge.exists({ contestId: contest._id });
+      if (badgeExists) {
+        contest.awardGiven = true;
+        await contest.save();
+      }
+      return contest;
+    }));
+
     res.status(200).json({
       success: true,
-      count: contests.length,
-      data: contests,
+      count: enrichedContests.length,
+      data: enrichedContests,
     });
   } catch (error) {
     res.status(500).json({ message: "❌ Server error.", error: error.message });

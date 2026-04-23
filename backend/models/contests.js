@@ -38,6 +38,10 @@ const contestSchema = new mongoose.Schema({
     type: Number, // in minutes
     required: true,
   },
+  awardGiven: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Contest = mongoose.model("Contest", contestSchema);

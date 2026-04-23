@@ -180,6 +180,10 @@ const AllInterns = () => {
                     <span className="font-medium text-slate-700 dark:text-slate-300">{intern.domain}</span>
                   </div>
                   <div>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1">Phone</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-xs">{intern.mobile || 'N/A'}</span>
+                  </div>
+                  <div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1">Join Date</span>
                     <span className="text-slate-600 dark:text-slate-400">{new Date(intern.joiningDate).toLocaleDateString()}</span>
                   </div>
@@ -273,6 +277,7 @@ const AllInterns = () => {
                       <tr className="bg-slate-100/50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                         <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Intern Detail</th>
                         <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Unique ID</th>
+                        <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Phone</th>
                         <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Domain</th>
                         <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Joining Date</th>
                         <th className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Status</th>
@@ -304,6 +309,7 @@ const AllInterns = () => {
                               {intern.uniqueId}
                             </span>
                           </td>
+                          <td className="py-3 px-4 sm:px-6 text-sm text-slate-600 dark:text-slate-400">{intern.mobile || 'N/A'}</td>
                           <td className="py-3 px-4 sm:px-6 text-sm font-medium text-slate-700 dark:text-slate-300">{intern.domain}</td>
                           <td className="py-3 px-4 sm:px-6 text-sm text-slate-600 dark:text-slate-400">{new Date(intern.joiningDate).toLocaleDateString()}</td>
                           <td className="py-3 px-4 sm:px-6">

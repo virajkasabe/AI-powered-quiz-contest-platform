@@ -75,6 +75,10 @@ export const finalizeContest = async (req, res) => {
       }
     }
 
+    // 6. Mark contest as finalized
+    contest.awardGiven = true;
+    await contest.save();
+
     res.status(200).json({
       success: true,
       message: `✅ Contest finalized. Winners awarded: Gold, Silver, and Bronze.`,
