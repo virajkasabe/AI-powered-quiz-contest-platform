@@ -22,13 +22,21 @@ const ProfilePage = () => {
                 const statsResponse = await apiCall("/quiz/stats");
                 
                 if (statsResponse && statsResponse.success) {
+                    console.log("Profile API Response Data:", statsResponse.data);
                     setStats(statsResponse.data);
-                    // Update user state with merged info
+                    // Update user state with merged info from backend API
                     setUser({
                         ...storedUser,
+                        uniqueId: statsResponse.data.uniqueId || storedUser?.uniqueId || storedUser?.id,
                         fullName: statsResponse.data.name || storedUser?.userName || "Intern",
+                        email: statsResponse.data.email || storedUser?.email,
+                        mobile: statsResponse.data.mobile || storedUser?.mobile,
+                        role: statsResponse.data.role || storedUser?.role,
+                        domain: statsResponse.data.domain || storedUser?.domain,
                         badgesEarned: statsResponse.data.badgesEarned,
-                        totalScore: statsResponse.data.totalScore
+                        totalScore: statsResponse.data.totalScore,
+                        status: statsResponse.data.status || storedUser?.status,
+                        joiningDate: statsResponse.data.joiningDate || storedUser?.joiningDate
                     });
                 } else {
                     setUser(storedUser);
@@ -168,7 +176,7 @@ const ProfilePage = () => {
                                 <div className="space-y-2">
                                     <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Phone Number</label>
                                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-100 font-bold shadow-sm">
-                                        {user.phone || "+91 91XXXXXX10"}
+                                        {user.mobile || "N/A"}
                                     </div>
                                 </div>
                             </div>
@@ -194,7 +202,14 @@ const ProfilePage = () => {
                                 <div className="space-y-2">
                                     <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Joining Date</label>
                                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-100 font-bold shadow-sm">
-                                        {user.joiningDate ? new Date(user.joiningDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "N/A"}
+                                        {(() => {
+                                            if (!user.joiningDate) return "N/A";
+                                            const d = new Date(user.joiningDate);
+                                            if (isNaN(d.getTime())) return "N/A";
+                                            const day = String(d.getDate()).padStart(2, '0');
+                                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                                            return `${day}-${month}-${d.getFullYear()}`;
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="space-y-2">

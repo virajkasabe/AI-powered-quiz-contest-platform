@@ -238,12 +238,12 @@ export const updateInternStatus = async (req, res) => {
 
 export const singleIntern = async (req, res) => {
   try {
-    const { uniqueId, name, email, domain, joiningDate } = req.body;
+    const { uniqueId, name, email, mobile, domain, joiningDate } = req.body;
 
-    if (!uniqueId || !name || !email || !domain || !joiningDate) {
+    if (!uniqueId || !name || !email || !mobile || !domain || !joiningDate) {
       return res
         .status(400)
-        .json({ massage: "uplode all details of interns " });
+        .json({ message: "upload all details of interns including mobile number" });
     }
 
     const oldUser = await Intern.findOne({ uniqueId });
@@ -254,11 +254,13 @@ export const singleIntern = async (req, res) => {
       uniqueId,
       name,
       email,
+      mobile,
       domain: domain.trim().toUpperCase(),
       joiningDate: new Date(joiningDate),
     });
 
     await newIntern.save();
+    console.log("Backend Saved Data:", newIntern);
     return res.status(200).json({ message: "New intern added", newIntern });
   } catch (error) {
     console.log("error in adding new intern", error);

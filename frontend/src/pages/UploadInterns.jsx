@@ -17,6 +17,7 @@ const UploadInterns = () => {
   const [singleInternData, setSingleInternData] = useState({
     name: '',
     email: '',
+    mobile: '',
     domain: '',
     uniqueId: '',
     joiningDate: ''
@@ -107,13 +108,14 @@ const UploadInterns = () => {
     setSingleSaveStatus(null);
     
     try {
+      console.log("Submitting Intern Payload:", singleInternData);
       await apiCall("/admin/upload-single-intern", {
         method: "POST",
         body: JSON.stringify(singleInternData),
       });
 
       setSingleSaveStatus('success');
-      setSingleInternData({ name: '', email: '', domain: '', uniqueId: '', joiningDate: '' });
+      setSingleInternData({ name: '', email: '', mobile: '', domain: '', uniqueId: '', joiningDate: '' });
     } catch (error) {
       console.error("Failed to add intern:", error);
       alert(error.message || "Failed to add intern");
@@ -372,6 +374,24 @@ const UploadInterns = () => {
                       onChange={handleSingleChange}
                       className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-slate-100 transition-all outline-none"
                       placeholder="e.g. john@example.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                      Phone Number *
+                    </label>
+                    <input 
+                      type="tel" 
+                      name="mobile"
+                      required
+                      pattern="[0-9]{10}"
+                      maxLength="10"
+                      title="Phone number must be exactly 10 digits without spaces or special characters"
+                      value={singleInternData.mobile}
+                      onChange={handleSingleChange}
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-slate-100 transition-all outline-none"
+                      placeholder="e.g. 9876543210"
                     />
                   </div>
 

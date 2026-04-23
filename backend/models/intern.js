@@ -15,6 +15,10 @@ const internSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  mobile: {
+    type: String,
+    required: true,
+  },
   joiningDate: {
     type: Date,
     required: true,

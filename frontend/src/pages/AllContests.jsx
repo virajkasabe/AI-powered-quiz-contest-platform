@@ -158,7 +158,19 @@ const AllContests = () => {
         ) : (
           <div className="flex flex-col gap-5">
             {filteredContests.map((contest, index) => {
-              const status = getStatus(contest.startTime, contest.expiryDate);
+              let statusRaw = contest.status || getStatus(contest.startTime, contest.expiryDate);
+              let status = "Upcoming";
+              if (typeof statusRaw === "string") {
+                 const s = statusRaw.toLowerCase();
+                 if (s === "completed" || s === "complete") status = "Completed";
+                 else if (s === "ongoing") status = "Ongoing";
+                 else if (s === "upcoming" || s === "scheduled" || s === "draft") status = "Upcoming";
+                 else status = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+              } else if (typeof statusRaw === "boolean") {
+                 status = statusRaw ? "Completed" : "Upcoming";
+              }
+              const isCompleted = status === 'Completed';
+              
               return (
                 <motion.div
                   key={contest._id}
