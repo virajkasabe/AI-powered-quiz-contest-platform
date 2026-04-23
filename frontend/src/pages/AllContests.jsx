@@ -58,7 +58,10 @@ const AllContests = () => {
 
       if (data.success) {
         alert("✅ Contest finalized successfully! Badges have been awarded.");
-        // In a real app, we'd refresh the list or update local state
+        // Update local state to disable button immediately
+        setContests(prev => prev.map(c => 
+          c.contestId === contestId ? { ...c, awardGiven: true } : c
+        ));
       } else {
         alert(`❌ Error: ${data.message}`);
       }
@@ -68,27 +71,7 @@ const AllContests = () => {
     }
   };
 
-  const handleDelete = async (contestId) => {
-    if (!window.confirm("Are you sure you want to delete this contest?")) {
-      return;
-    }
 
-    try {
-      const response = await apiCall(`/admin/delete-contest/${contestId}`, {
-        method: "DELETE",
-      });
-
-      if (response.success) {
-        alert("✅ Contest deleted successfully!");
-        setContests((prev) => prev.filter((c) => c.contestId !== contestId));
-      } else {
-        alert(`❌ Error: ${response.message || 'Failed to delete'}`);
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
-      alert(`❌ Failed to delete contest: ${error.message}`);
-    }
-  };
 
 
   return (
@@ -260,9 +243,13 @@ const AllContests = () => {
                               <div className="flex items-center gap-2">
                                 <button 
                                   onClick={() => handleFinalize(contest.contestId)}
-                                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all text-sm whitespace-nowrap"
+                                  disabled={contest.awardGiven}
+                                  className={`px-6 py-3 font-bold rounded-xl shadow-lg active:scale-95 transition-all text-sm whitespace-nowrap
+                                    ${contest.awardGiven 
+                                      ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none' 
+                                      : 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20'}`}
                                 >
-                                  Award Badges
+                                  {contest.awardGiven ? 'Badges Awarded' : 'Award Badges'}
                                 </button>
                                 <button
                                   onClick={() => navigate(`/admin/contest-results/${contest.contestId}`)}
@@ -270,43 +257,17 @@ const AllContests = () => {
                                 >
                                   View Result
                                 </button>
-                                {contest.awardGiven && (
-                                  <button 
-                                    disabled
-                                    title="Cannot delete after award is given"
-                                    className="p-3 text-red-500 opacity-50 cursor-not-allowed rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                                  >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                  </button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{status}</span>
                                 <button className="p-3 text-slate-400 hover:text-sky-500 transition-colors rounded-xl border border-slate-200 dark:border-slate-700 hover:border-sky-200 hover:bg-sky-50 dark:hover:bg-slate-800">
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                                   </svg>
-                                </button>
-                                {contest.awardGiven ? (
-                                  <button 
-                                    className="p-3 text-red-500 opacity-50 cursor-not-allowed rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                                    disabled
-                                    title="Cannot delete after award is given"
-                                  >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                   </button>
-                                ) : (
-                                  <button 
-                                    onClick={() => handleDelete(contest.contestId)}
-                                    className="p-3 text-red-500 hover:text-red-700 transition-colors rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    title="Delete Contest"
-                                  >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                  </button>
-                                )}
-                              </div>
-                            )}
+                                </div>
+                              )}
                           </>
                         )}
                     </div>

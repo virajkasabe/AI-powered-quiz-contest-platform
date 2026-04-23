@@ -41,9 +41,9 @@ const UploadInterns = () => {
     setUploadStatus(null);
     setTimeout(() => {
       setParsedData([
-        { name: 'John Doe', email: 'john@example.com', domain: 'Frontend', uniqueId: 'ATHENURA/25/1101', joiningDate: '2025-01-15' },
-        { name: 'Jane Smith', email: 'jane@example.com', domain: 'Backend', uniqueId: 'ATHENURA/25/1102', joiningDate: '2025-01-15' },
-        { name: 'Michael Ray', email: 'michael@example.com', domain: 'Data Science', uniqueId: 'ATHENURA/25/1103', joiningDate: '2025-01-15' },
+        { name: 'John Doe', email: 'john@example.com', mobile: '9876543210', domain: 'Frontend', uniqueId: 'ATHENURA/25/1101', joiningDate: '2025-01-15' },
+        { name: 'Jane Smith', email: 'jane@example.com', mobile: '9876543211', domain: 'Backend', uniqueId: 'ATHENURA/25/1102', joiningDate: '2025-01-15' },
+        { name: 'Michael Ray', email: 'michael@example.com', mobile: '9876543212', domain: 'Data Science', uniqueId: 'ATHENURA/25/1103', joiningDate: '2025-01-15' },
       ]);
     }, 600);
   };
@@ -255,7 +255,7 @@ const UploadInterns = () => {
                   <p className="text-slate-500 dark:text-slate-400 text-sm text-center max-w-sm">
                     {file 
                       ? `${(file.size / 1024).toFixed(2)} KB selected.` 
-                      : 'Upload a CSV or Excel file containing intern details (Name, Email, Domain).'}
+                      : 'Upload a CSV or Excel file containing intern details (Name, Email, Mobile, Domain).'}
                   </p>
                 </div>
 
@@ -273,6 +273,7 @@ const UploadInterns = () => {
                             <tr>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Name</th>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Email</th>
+                              <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Phone</th>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Domain</th>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Unique ID</th>
                               <th className="py-3 px-4 sm:px-6 font-bold uppercase text-xs">Date</th>
@@ -283,6 +284,7 @@ const UploadInterns = () => {
                               <tr key={idx}>
                                 <td className="py-3 px-4 sm:px-6 font-medium text-slate-800 dark:text-slate-200">{row.name}</td>
                                 <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400">{row.email}</td>
+                                <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400 text-xs">{row.mobile || 'N/A'}</td>
                                 <td className="py-3 px-4 sm:px-6 text-slate-600 dark:text-slate-400 text-xs">{row.domain}</td>
                                 <td className="py-3 px-4 sm:px-6 font-mono text-xs text-slate-500 dark:text-slate-400">{row.uniqueId}</td>
                                 <td className="py-3 px-4 sm:px-6 text-xs text-slate-500 dark:text-slate-400">{row.joiningDate}</td>
